@@ -89,7 +89,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(10),
-                height: screenHeight * 0.63,
+                height: screenHeight * 0.40,
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -143,10 +143,6 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 10),
-                                  const Text(
-                                    'Retirada no Local',
-                                    style: TextStyle(color: Colors.grey),
-                                  ),
                                 ],
                               ),
                             ],
@@ -178,11 +174,11 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                 // Lógica para adicionar à sacola
                               },
                               child: const Padding(
-                                padding: EdgeInsets.all(12.0),
+                                padding: EdgeInsets.all(5.0),
                                 child: Text(
                                   'Adicionar à Sacola',
                                   style: TextStyle(
-                                      fontSize: 16, color: Colors.white),
+                                      fontSize: 12, color: Colors.white),
                                 ),
                               ),
                             ),
@@ -199,12 +195,12 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                               onPressed: () {
                                 // Lógica para compra
                               },
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
+                              child: Container(
+                                padding: const EdgeInsets.all(5.0),
                                 child: Text(
                                   'Comprar  R\$${widget.price.toStringAsFixed(2)}',
                                   style: const TextStyle(
-                                      fontSize: 16, color: Colors.white),
+                                      fontSize: 12, color: Colors.white),
                                 ),
                               ),
                             ),
