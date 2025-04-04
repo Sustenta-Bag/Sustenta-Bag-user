@@ -19,17 +19,17 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Text(
+              "Login",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
             Stack(
               alignment: Alignment.center,
               children: [
                 Image.asset('assets/detail.png', width: 200),
                 Image.asset('assets/shop.png', width: 120),
               ],
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "Login",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
             _buildTextField(label: "Usuário", hint: "example@email.com"),
