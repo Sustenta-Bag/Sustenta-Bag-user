@@ -11,6 +11,16 @@ class IntroScreen extends StatelessWidget {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: 60),
+          const Text(
+            "SustentaBag",
+            style: TextStyle(
+              fontSize: 42,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Serif',
+            ),
+          ),
+          const SizedBox(height: 20),
           Expanded(
             flex: 3,
             child: Stack(
@@ -18,15 +28,6 @@ class IntroScreen extends StatelessWidget {
               children: [
                 Image.asset('assets/foods.png', width: 250),
               ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            "SustentaBag",
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Serif',
             ),
           ),
           const SizedBox(height: 10),

@@ -66,6 +66,7 @@ flutter:
     - assets/shop.png
     - assets/detail.png
     - assets/foods.png
+    - assets/mcd.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
