@@ -242,7 +242,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       bottomNavigationBar: BottomNavBar(
         onItemSelected: (index) {
-          print('Selected index: $index');
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/order');
+              break;
+            case 2:
+              Navigator.pushReplacementNamed(context, '/bag');
+              break;
+            case 3:
+              Navigator.pushReplacementNamed(context, '/user');
+              break;
+            default:
+              break;
+          }
         },
       ),
     );
