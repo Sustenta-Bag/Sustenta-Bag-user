@@ -39,7 +39,7 @@ class DeliveryOptionScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: Colors.orange[100],
+                  color: Colors.orange[50],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Row(
@@ -63,7 +63,7 @@ class DeliveryOptionScreen extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.orange[100],
+                color: Colors.orange[50],
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -84,7 +84,7 @@ class DeliveryOptionScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.orange[100],
+                  color: Colors.orange[50],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Row(
@@ -105,7 +105,7 @@ class DeliveryOptionScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.orange[100],
+                  color: Colors.orange[50],
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(

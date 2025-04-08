@@ -30,7 +30,7 @@ class _BagScreenState extends State<BagScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFCE8D5),
+        backgroundColor: Colors.orange[50],
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -61,7 +61,7 @@ class _BagScreenState extends State<BagScreen> {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFCE8D5),
+                      color: Colors.orange[50],
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
