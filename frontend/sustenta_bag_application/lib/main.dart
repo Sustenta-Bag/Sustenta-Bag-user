@@ -4,6 +4,7 @@ import 'screens/LoginScreen.dart';
 import 'screens/homeScreen.dart';
 import 'screens/sacola/BagScreen.dart';
 import 'screens/sacola/DeliveryOptionsScreen.dart';
+import 'screens/sacola/ReviewOrderScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,13 +23,17 @@ class MyApp extends StatelessWidget {
         switch (settings.name) {
           case '/':
             return MaterialPageRoute(builder: (context) => const IntroScreen());
+
           case '/login':
             return MaterialPageRoute(builder: (context) => const LoginScreen());
+
           case '/home':
             return MaterialPageRoute(
                 builder: (context) => const DashboardScreen());
+
           case '/bag':
             return MaterialPageRoute(builder: (context) => const BagScreen());
+
           case '/bag/deliveryOptions':
             final args = settings.arguments as Map<String, dynamic>? ?? {};
             return MaterialPageRoute(
@@ -36,8 +41,19 @@ class MyApp extends StatelessWidget {
                 hasDelivery: args['hasDelivery'] ?? false,
                 userAddress: args['userAddress'] ?? '',
                 storeAddress: args['storeAddress'] ?? '',
+                subtotal: args['subtotal'] ?? 0.0, // ✅ Aqui
               ),
             );
+
+          case '/bag/reviewOrder':
+            final args = settings.arguments as Map<String, dynamic>? ?? {};
+            return MaterialPageRoute(
+              builder: (context) => ReviewOrderScreen(
+                subtotal: args['subtotal'] ?? 0.0,
+                deliveryFee: args['deliveryFee'] ?? 0.0,
+              ),
+            );
+
           default:
             return MaterialPageRoute(builder: (context) => const IntroScreen());
         }

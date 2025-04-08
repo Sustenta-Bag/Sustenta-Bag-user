@@ -126,9 +126,10 @@ class _BagScreenState extends State<BagScreen> {
                     context,
                     '/bag/deliveryOptions',
                     arguments: {
-                      'hasDelivery': true, // ou false, dependendo do caso
+                      'hasDelivery': true,
                       'userAddress': 'Rua do Usuário, 123, Cidade, 12345678',
                       'storeAddress': 'Rua da Loja, 456, Cidade, 87654321',
+                      'subtotal': getTotal(),
                     },
                   );
                 },
