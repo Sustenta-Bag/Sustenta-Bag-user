@@ -49,7 +49,7 @@ class ReviewOrderScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Ação de prosseguir para pagamento
+                  Navigator.pushNamed(context, '/bag/payment');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
