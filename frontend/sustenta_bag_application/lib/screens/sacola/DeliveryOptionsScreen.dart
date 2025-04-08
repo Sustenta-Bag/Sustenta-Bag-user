@@ -5,11 +5,14 @@ class DeliveryOptionScreen extends StatelessWidget {
   final String userAddress;
   final String storeAddress;
 
+  final double subtotal;
+
   const DeliveryOptionScreen({
     super.key,
     required this.hasDelivery,
     required this.userAddress,
     required this.storeAddress,
+    required this.subtotal,
   });
 
   @override
@@ -133,7 +136,16 @@ class DeliveryOptionScreen extends StatelessWidget {
                   backgroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/bag/reviewOrder',
+                    arguments: {
+                      'subtotal': subtotal,
+                      'deliveryFee': hasDelivery ? 8.0 : 0.0,
+                    },
+                  );
+                },
                 child: const Text(
                   'Prosseguir',
                   style: TextStyle(fontSize: 16, color: Colors.white),
