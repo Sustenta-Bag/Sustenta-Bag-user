@@ -5,6 +5,7 @@ import 'screens/homeScreen.dart';
 import 'screens/sacola/BagScreen.dart';
 import 'screens/sacola/DeliveryOptionsScreen.dart';
 import 'screens/sacola/ReviewOrderScreen.dart';
+import 'screens/sacola/PaymentScreen.dart'; // 👈 adicione isso no topo
 
 void main() {
   runApp(const MyApp());
@@ -53,6 +54,9 @@ class MyApp extends StatelessWidget {
                 deliveryFee: args['deliveryFee'] ?? 0.0,
               ),
             );
+          case '/bag/payment':
+            return MaterialPageRoute(
+                builder: (context) => const PaymentScreen());
 
           default:
             return MaterialPageRoute(builder: (context) => const IntroScreen());
