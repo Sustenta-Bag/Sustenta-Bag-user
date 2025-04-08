@@ -247,7 +247,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Navigator.pushReplacementNamed(context, '/home');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/order');
+              Navigator.pushReplacementNamed(context, '/history');
               break;
             case 2:
               Navigator.pushReplacementNamed(context, '/bag');

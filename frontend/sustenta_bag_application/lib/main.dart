@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'screens/IntroScreen.dart';
 import 'screens/LoginScreen.dart';
 import 'screens/homeScreen.dart';
-import 'screens/sacola/BagScreen.dart';
-import 'screens/sacola/DeliveryOptionsScreen.dart';
-import 'screens/sacola/ReviewOrderScreen.dart';
-import 'screens/sacola/PaymentScreen.dart'; // 👈 adicione isso no topo
+import 'screens/bag/BagScreen.dart';
+import 'screens/bag/DeliveryOptionsScreen.dart';
+import 'screens/bag/ReviewOrderScreen.dart';
+import 'screens/bag/PaymentScreen.dart'; // 👈 adicione isso no topo
+import 'screens/history/HistoryScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -57,6 +58,9 @@ class MyApp extends StatelessWidget {
           case '/bag/payment':
             return MaterialPageRoute(
                 builder: (context) => const PaymentScreen());
+          case '/history':
+            return MaterialPageRoute(
+                builder: (context) => const HistoryScreen());
 
           default:
             return MaterialPageRoute(builder: (context) => const IntroScreen());
