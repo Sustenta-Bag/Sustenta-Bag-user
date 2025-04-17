@@ -7,7 +7,7 @@ class IntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFFFF8E8),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -26,7 +26,7 @@ class IntroScreen extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Image.asset('assets/foods.png', width: 250),
+                Image.asset('assets/foods.png', width: 300),
               ],
             ),
           ),
@@ -34,7 +34,7 @@ class IntroScreen extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 30),
             child: Text(
-              "Reduza desperdícios e conquiste mais clientes de forma sustentável!",
+              "Compre uma sacola misteriosa e salve o mundo!",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16),
             ),
@@ -47,7 +47,7 @@ class IntroScreen extends StatelessWidget {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                    backgroundColor: Color(0xFFE8514C),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
