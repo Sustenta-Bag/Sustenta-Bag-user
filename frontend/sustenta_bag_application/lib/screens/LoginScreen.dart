@@ -19,17 +19,16 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              "Login",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
             const SizedBox(height: 20),
             Stack(
               alignment: Alignment.center,
               children: [
-                Image.asset('assets/detail.png', width: 200),
-                Image.asset('assets/shop.png', width: 120),
+                Image.asset('assets/login.png', width: 200),
               ],
+            ),
+            const Text(
+              "Login",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
             _buildTextField(label: "Usuário", hint: "example@email.com"),
@@ -41,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: Color(0xFFE8514C),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -52,6 +51,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: const Text("Entrar",
                     style: TextStyle(color: Colors.white, fontSize: 18)),
               ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("Não possui uma conta? "),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/register1');
+                  },
+                  child: const Text(
+                    "Inscreva-se",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

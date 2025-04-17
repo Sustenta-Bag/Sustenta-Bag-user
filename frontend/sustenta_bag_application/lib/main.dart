@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sustenta_bag_application/screens/Register/RegisterStep1.dart';
+import 'package:sustenta_bag_application/screens/Register/RegisterStep2.dart';
+import 'package:sustenta_bag_application/screens/Register/RegisterStep3.dart';
 import 'screens/IntroScreen.dart';
 import 'screens/LoginScreen.dart';
 import 'screens/homeScreen.dart';
@@ -61,6 +64,14 @@ class MyApp extends StatelessWidget {
           case '/history':
             return MaterialPageRoute(
                 builder: (context) => const HistoryScreen());
+          case '/register1':
+            return MaterialPageRoute(builder: (context) => RegisterStep1());
+
+          case '/register2':
+            return MaterialPageRoute(builder: (context) => RegisterStep2());
+
+          case '/register3':
+            return MaterialPageRoute(builder: (context) => RegisterStep3());
 
           default:
             return MaterialPageRoute(builder: (context) => const IntroScreen());
