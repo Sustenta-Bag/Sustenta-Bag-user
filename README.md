@@ -27,7 +27,7 @@ sustenta-bag-user/
 │       ├── lib/            # Código fonte Dart da aplicação
 │       ├── test/           # Testes automatizados
 │       └── pubspec.yaml    # Definição de dependências
-└── exemple.env            # Modelo de variáveis de ambiente
+└── exemplo.env            # Modelo de variáveis de ambiente
 ```
 
 ## 💻 Tecnologias Utilizadas
