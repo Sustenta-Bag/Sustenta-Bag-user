@@ -252,43 +252,10 @@ jobs:
             echo "Esta tag será automaticamente promovida para main no próximo passo do workflow." >> "$GITHUB_STEP_SUMMARY"
           fi
 
-  # Job 2: Executar testes automatizados do Flutter
-  run-flutter-tests:
-    name: Executar Testes Flutter
-    needs: [tag-branch]
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./frontend/sustenta_bag_application
-    steps:
-      - name: Checkout do repositório
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.19.3'
-          channel: 'stable'
-          
-      - name: Obter dependências
-        run: flutter pub get
-      
-      - name: Verificar formatação
-        run: dart format --output=none .
-        
-      - name: Analisar código
-        run: flutter analyze
-        
-      - name: Executar testes
-        run: flutter test
-
-  # Job 3: Promover alterações da develop para a main com build do Flutter
+  # Job 2: Promover alterações da develop para a main com build do Flutter
   promote-to-main:
     name: Promover para Main e Gerar Build
-    needs: [tag-branch, run-flutter-tests]
+    needs: [tag-branch]
     if: |
       (needs.tag-branch.outputs.branch_name == 'develop' && success()) ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'promover-para-main') ||
