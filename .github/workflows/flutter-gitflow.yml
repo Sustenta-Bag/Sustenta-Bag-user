@@ -102,3 +102,28 @@ jobs:
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Merge para Main
+        run: |
+          TAG="${{ steps.create-tag.outputs.tag }}"
+          
+          # Checkout da main
+          git checkout main
+          git pull origin main
+          
+          # Fazer merge da develop para main
+          git merge --no-ff develop -m "Merge da develop (tag $TAG) para main"
+          
+          # Criar tag de versão para release
+          # Extract número da tag dev
+          DEV_NUMBER=$(echo $TAG | sed -E 's/dev-([0-9]+).*/\1/')
+          VERSION="v1.0.${DEV_NUMBER}"
+          git tag -a "$VERSION" -m "Release $VERSION (promovida da tag $TAG)"
+          
+          # Push das mudanças
+          git push origin main
+          git push origin "$VERSION"
+          
+          echo "### ✅ Main atualizada com sucesso" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Tag da develop: $TAG" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Nova tag de release: $VERSION" >> "$GITHUB_STEP_SUMMARY"
