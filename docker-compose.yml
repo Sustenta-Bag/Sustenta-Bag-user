@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  flutter_web:
+    build:
+      context: ./frontend/sustenta_bag_application
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+    container_name: sustenta_bag_web 

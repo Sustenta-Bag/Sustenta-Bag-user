@@ -70,7 +70,7 @@ flutter:
     - assets/detail.png
     - assets/foods.png
     - assets/mcd.png
-    - assets/payment.mp4
+    - assets/Payment.mp4
     - assets/login.png
 
   # To add assets to your application, add an assets section, like this:
