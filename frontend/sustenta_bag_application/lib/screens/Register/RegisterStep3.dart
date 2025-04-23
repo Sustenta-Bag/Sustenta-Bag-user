@@ -50,7 +50,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
 
       // Usar os dados do cadastro (exemplo para resolver warning)
       print('Cadastro finalizado com os dados: $dadosCompletos');
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cadastro realizado com sucesso!')),
       );
@@ -110,7 +110,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                   controller: _complementoController,
                   label: "Complemento",
                   hint: "Casa, Apto, etc.",
-                  validator: null, 
+                  validator: null,
                 ),
                 const SizedBox(height: 30),
                 _buildTextFormField(

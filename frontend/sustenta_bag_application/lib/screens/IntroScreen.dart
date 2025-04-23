@@ -47,7 +47,7 @@ class IntroScreen extends StatelessWidget {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFE8514C),
+                  backgroundColor: Color(0xFFE8514C),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
