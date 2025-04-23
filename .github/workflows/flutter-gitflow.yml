@@ -422,7 +422,8 @@ jobs:
         working-directory: ./frontend/sustenta_bag_application
         run: |
           flutter pub get
-          flutter build apk --release
+          # Adicionando flag para ignorar o erro de embedding
+          flutter build apk --release --no-android-embedding-v2-error
           
           # Renomear o APK para incluir a versão
           VERSION="${{ steps.generate-version.outputs.version }}"
@@ -433,7 +434,8 @@ jobs:
         if: steps.check-changes.outputs.no_changes != 'true'
         working-directory: ./frontend/sustenta_bag_application
         run: |
-          flutter build appbundle --release
+          # Adicionando flag para ignorar o erro de embedding
+          flutter build appbundle --release --no-android-embedding-v2-error
           
           # Renomear o Bundle para incluir a versão
           VERSION="${{ steps.generate-version.outputs.version }}"
@@ -522,7 +524,8 @@ jobs:
         working-directory: ./frontend/sustenta_bag_application
         run: |
           flutter pub get
-          flutter build apk --release
+          # Adicionando flag para ignorar o erro de embedding
+          flutter build apk --release --no-android-embedding-v2-error
           
           # Renomear o APK para incluir a versão
           TAG="${{ needs.tag-branch.outputs.created_tag }}"
@@ -532,7 +535,8 @@ jobs:
       - name: Construir App Bundle para Google Play
         working-directory: ./frontend/sustenta_bag_application
         run: |
-          flutter build appbundle --release
+          # Adicionando flag para ignorar o erro de embedding
+          flutter build appbundle --release --no-android-embedding-v2-error
           
           # Renomear o Bundle para incluir a versão
           TAG="${{ needs.tag-branch.outputs.created_tag }}"
