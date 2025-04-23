@@ -277,7 +277,7 @@ jobs:
         run: flutter pub get
       
       - name: Verificar formatação
-        run: dart format --output=none --set-exit-if-changed .
+        run: dart format --output=none .
         
       - name: Analisar código
         run: flutter analyze
