@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Este é um arquivo de compatibilidade para garantir que o build não falhe por causa da falta de um AndroidManifest.xml na raiz do diretório android -->
+<!-- O verdadeiro AndroidManifest.xml está em app/src/main/AndroidManifest.xml -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.sustenta_bag_application">
+    <!-- Esta tag será mesclada com o AndroidManifest.xml principal durante o build -->
+</manifest> 
