@@ -1,0 +1,17 @@
+.dart_tool/
+.git/
+.github/
+.gitignore
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.idea/
+.vscode/
+*.iml
+*.log
+*.lock
+*.pyc
+Dockerfile
+.dockerignore
+README.md 

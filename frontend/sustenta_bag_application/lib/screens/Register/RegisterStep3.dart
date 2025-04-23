@@ -48,6 +48,8 @@ class _RegisterStep3State extends State<RegisterStep3> {
         'cidade': _cidadeController.text,
       };
 
+      // Usar os dados do cadastro (exemplo para resolver warning)
+      print('Cadastro finalizado com os dados: $dadosCompletos');
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cadastro realizado com sucesso!')),
