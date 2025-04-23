@@ -496,3 +496,80 @@ jobs:
         run: |
           echo "### ℹ️ Não houve promoção" >> "$GITHUB_STEP_SUMMARY"
           echo "Não foram encontradas mudanças para promover da develop para a main" >> "$GITHUB_STEP_SUMMARY"
+
+  # Job 3: Criar release a partir de qualquer tag
+  create-release:
+    name: Criar Release da Tag
+    needs: [tag-branch]
+    if: success() && needs.tag-branch.outputs.created_tag != ''
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ needs.tag-branch.outputs.created_tag }}
+      
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.3'
+          channel: 'stable'
+      
+      - name: Construir APK para release
+        working-directory: ./frontend/sustenta_bag_application
+        run: |
+          flutter pub get
+          flutter build apk --release
+          
+          # Renomear o APK para incluir a versão
+          TAG="${{ needs.tag-branch.outputs.created_tag }}"
+          mkdir -p build/release
+          cp build/app/outputs/flutter-apk/app-release.apk build/release/sustenta-bag-${TAG}.apk
+      
+      - name: Construir App Bundle para Google Play
+        working-directory: ./frontend/sustenta_bag_application
+        run: |
+          flutter build appbundle --release
+          
+          # Renomear o Bundle para incluir a versão
+          TAG="${{ needs.tag-branch.outputs.created_tag }}"
+          mkdir -p build/release
+          cp build/app/outputs/bundle/release/app-release.aab build/release/sustenta-bag-${TAG}.aab
+      
+      - name: Gerar changelog
+        id: changelog
+        run: |
+          TAG="${{ needs.tag-branch.outputs.created_tag }}"
+          
+          # Encontrar a penúltima tag para comparar alterações
+          PREV_TAG=$(git describe --tags --abbrev=0 `git rev-list --tags --skip=1 --max-count=1` || echo "")
+          
+          echo "### Changelog da tag $TAG" > changelog.md
+          echo "" >> changelog.md
+          
+          if [ -n "$PREV_TAG" ]; then
+            echo "Alterações desde $PREV_TAG:" >> changelog.md
+            git log --pretty=format:"- %s (%an)" $PREV_TAG..$TAG >> changelog.md
+          else
+            echo "Primeiro lançamento" >> changelog.md
+            git log --pretty=format:"- %s (%an)" >> changelog.md
+          fi
+          
+          cat changelog.md >> "$GITHUB_STEP_SUMMARY"
+      
+      - name: Criar GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.tag-branch.outputs.created_tag }}
+          name: Release ${{ needs.tag-branch.outputs.created_tag }}
+          body_path: changelog.md
+          draft: false
+          prerelease: ${{ startsWith(needs.tag-branch.outputs.created_tag, 'dev-') || startsWith(needs.tag-branch.outputs.created_tag, 'feature-') || startsWith(needs.tag-branch.outputs.created_tag, 'hotfix-') }}
+          files: |
+            frontend/sustenta_bag_application/build/release/sustenta-bag-${{ needs.tag-branch.outputs.created_tag }}.apk
+            frontend/sustenta_bag_application/build/release/sustenta-bag-${{ needs.tag-branch.outputs.created_tag }}.aab
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
