@@ -1,0 +1,266 @@
+name: "Análise de Segurança Flutter"
+
+on:
+  push:
+    branches: [ main, master, develop, feature/* ]
+  pull_request:
+    branches: [ main, master, develop ]
+  schedule:
+    - cron: '0 0 * * 1'  # Executar à meia-noite nas segundas-feiras
+
+jobs:
+  flutter-security-check:
+    name: Verificação de Segurança Flutter
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend/sustenta_bag_application
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+        
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.3'
+          channel: 'stable'
+          
+      - name: Instalar dependências
+        run: flutter pub get
+        
+      - name: Verificar dependências desatualizadas
+        run: flutter pub outdated
+        
+      - name: Executar Flutter analyze para problemas de segurança
+        run: flutter analyze --no-fatal-infos
+      
+      - name: Verificar pacotes com vulnerabilidades conhecidas
+        run: |
+          echo "Verificando pacotes com vulnerabilidades conhecidas"
+          # Lista de pacotes conhecidos por terem vulnerabilidades
+          VULNERABLE_PACKAGES=(
+            "http:<0.13.0"
+            "crypto:<3.0.0"
+            "shared_preferences:<2.0.0"
+          )
+          
+          # Verifica pubspec.lock para pacotes vulneráveis
+          VULNERABILITIES_FOUND=0
+          for package in "${VULNERABLE_PACKAGES[@]}"; do
+            PKG_NAME=$(echo $package | cut -d':' -f1)
+            PKG_VERSION=$(echo $package | cut -d':' -f2)
+            
+            if grep -q "$PKG_NAME" pubspec.lock; then
+              CURRENT_VERSION=$(grep -A 3 "$PKG_NAME:" pubspec.lock | grep "version:" | sed 's/.*version: "\(.*\)".*/\1/')
+              if [ ! -z "$CURRENT_VERSION" ]; then
+                if [ $(echo $PKG_VERSION | cut -c1) == "<" ]; then
+                  # Remove o "<" para comparação numérica
+                  UNSAFE_VERSION=$(echo $PKG_VERSION | cut -c2-)
+                  if [ "$(printf '%s\n' "$UNSAFE_VERSION" "$CURRENT_VERSION" | sort -V | head -n1)" = "$CURRENT_VERSION" ]; then
+                    echo "⚠️ Vulnerabilidade detectada: $PKG_NAME versão $CURRENT_VERSION (recomendado: $PKG_VERSION)"
+                    VULNERABILITIES_FOUND=$((VULNERABILITIES_FOUND+1))
+                  fi
+                fi
+              fi
+            fi
+          done
+          
+          if [ $VULNERABILITIES_FOUND -gt 0 ]; then
+            echo "Foram encontradas $VULNERABILITIES_FOUND possíveis vulnerabilidades em dependências"
+            echo "Recomendação: Atualize estas dependências para versões mais recentes"
+          else
+            echo "✅ Nenhuma vulnerabilidade conhecida encontrada nas dependências"
+          fi
+        
+      - name: Verificar configurações de segurança do Android
+        run: |
+          echo "Verificando configurações de segurança do Android"
+          
+          # Verificar permissões excessivas no Android Manifest
+          if [ -f "android/app/src/main/AndroidManifest.xml" ]; then
+            echo "Analisando AndroidManifest.xml para permissões excessivas"
+            DANGEROUS_PERMISSIONS=(
+              "android.permission.READ_PHONE_STATE"
+              "android.permission.CAMERA"
+              "android.permission.ACCESS_FINE_LOCATION"
+              "android.permission.RECORD_AUDIO"
+              "android.permission.READ_CONTACTS"
+              "android.permission.READ_CALENDAR"
+              "android.permission.READ_EXTERNAL_STORAGE"
+              "android.permission.WRITE_EXTERNAL_STORAGE"
+            )
+            
+            MANIFEST_PERMISSIONS_FOUND=0
+            for permission in "${DANGEROUS_PERMISSIONS[@]}"; do
+              if grep -q "$permission" android/app/src/main/AndroidManifest.xml; then
+                echo "⚠️ Permissão sensível detectada: $permission"
+                MANIFEST_PERMISSIONS_FOUND=$((MANIFEST_PERMISSIONS_FOUND+1))
+              fi
+            done
+            
+            if [ $MANIFEST_PERMISSIONS_FOUND -gt 0 ]; then
+              echo "Foram encontradas $MANIFEST_PERMISSIONS_FOUND permissões sensíveis no AndroidManifest.xml"
+              echo "Recomendação: Revise se todas essas permissões são realmente necessárias para o funcionamento do app"
+            else
+              echo "✅ Nenhuma permissão sensível excessiva encontrada no AndroidManifest.xml"
+            fi
+          fi
+          
+          # Verificar configurações de segurança no build.gradle
+          if [ -f "android/app/build.gradle.kts" ]; then
+            echo "Analisando build.gradle.kts para configurações de segurança"
+            
+            # Verificar se minifyEnabled está ativado para release
+            if grep -q "minifyEnabled false" android/app/build.gradle.kts; then
+              echo "⚠️ minifyEnabled está desativado para builds de release"
+              echo "Recomendação: Ative minifyEnabled para dificultar engenharia reversa"
+            else
+              echo "✅ minifyEnabled aparenta estar corretamente configurado"
+            fi
+            
+            # Verificar segurança do Network Security Config
+            if ! grep -q "networkSecurityConfig" android/app/src/main/AndroidManifest.xml && ! grep -q "android:usesCleartextTraffic=\"false\"" android/app/src/main/AndroidManifest.xml; then
+              echo "⚠️ Network Security Config não configurado ou permite tráfego não criptografado"
+              echo "Recomendação: Configure networkSecurityConfig ou defina android:usesCleartextTraffic=\"false\""
+            else
+              echo "✅ Configurações de segurança de rede aparentam estar corretas"
+            fi
+          fi
+
+      - name: Verificar configurações de segurança do iOS
+        run: |
+          echo "Verificando configurações de segurança do iOS"
+          
+          # Verificar configurações no Info.plist
+          if [ -f "ios/Runner/Info.plist" ]; then
+            echo "Analisando Info.plist para configurações de segurança"
+            
+            # Verificar App Transport Security
+            if grep -q "<key>NSAllowsArbitraryLoads</key>\\s*<true/>" ios/Runner/Info.plist; then
+              echo "⚠️ App Transport Security está desativado (NSAllowsArbitraryLoads=true)"
+              echo "Recomendação: Evite desativar ATS completamente; use exceções específicas se necessário"
+            else
+              echo "✅ App Transport Security aparenta estar corretamente configurado"
+            fi
+            
+            # Verificar permissões sensíveis no Info.plist
+            IOS_PERMISSIONS=(
+              "NSCameraUsageDescription"
+              "NSLocationWhenInUseUsageDescription"
+              "NSLocationAlwaysUsageDescription"
+              "NSPhotoLibraryUsageDescription"
+              "NSMicrophoneUsageDescription"
+              "NSContactsUsageDescription"
+              "NSCalendarsUsageDescription"
+            )
+            
+            IOS_PERMISSIONS_FOUND=0
+            for permission in "${IOS_PERMISSIONS[@]}"; do
+              if grep -q "<key>$permission</key>" ios/Runner/Info.plist; then
+                echo "ℹ️ Permissão iOS detectada: $permission"
+                IOS_PERMISSIONS_FOUND=$((IOS_PERMISSIONS_FOUND+1))
+                
+                # Verificar se a descrição está vazia
+                EMPTY_DESC=$(grep -A 1 "<key>$permission</key>" ios/Runner/Info.plist | grep -E "<string>(\s*|.*\.)</string>")
+                if [ ! -z "$EMPTY_DESC" ]; then
+                  echo "⚠️ Descrição vaga ou vazia para $permission"
+                  echo "Recomendação: Forneça descrições claras para todas as permissões solicitadas"
+                fi
+              fi
+            done
+            
+            echo "Total de $IOS_PERMISSIONS_FOUND permissões iOS detectadas"
+          fi
+      
+      - name: Verificar vazamentos de dados sensíveis
+        run: |
+          echo "Verificando vazamentos de dados sensíveis no código"
+          
+          # Expressões regulares para detectar possíveis vazamentos
+          PATTERNS=(
+            "api[_-]?key"
+            "auth[_-]?token"
+            "password"
+            "secret"
+            "firebase[_-]?secret"
+            "private[_-]?key"
+          )
+          
+          LEAKS_FOUND=0
+          for pattern in "${PATTERNS[@]}"; do
+            LEAKS=$(grep -r -i -E "$pattern\\s*[:=]\\s*['\"].*['\"]" --include="*.dart" lib/ || true)
+            if [ ! -z "$LEAKS" ]; then
+              echo "⚠️ Possível vazamento de dados sensíveis encontrado com padrão '$pattern':"
+              echo "$LEAKS" | head -n 5  # Limitar a 5 resultados para não sobrecarregar o log
+              if [ $(echo "$LEAKS" | wc -l) -gt 5 ]; then
+                echo "... e mais resultados encontrados"
+              fi
+              LEAKS_FOUND=$((LEAKS_FOUND+1))
+            fi
+          done
+          
+          if [ $LEAKS_FOUND -gt 0 ]; then
+            echo "Foram encontrados possíveis vazamentos de dados sensíveis em $LEAKS_FOUND padrões diferentes"
+            echo "Recomendação: Utilize variáveis de ambiente, Flutter secure storage ou outras formas seguras para armazenar segredos"
+          else
+            echo "✅ Nenhum vazamento óbvio de dados sensíveis encontrado"
+          fi
+        
+      - name: Verificar status do Advanced Security
+        id: advanced-security
+        run: |
+          echo "Verificando status do GitHub Advanced Security"
+          if [ "${{ github.event.repository.private }}" == "false" ]; then
+            echo "Repositório público - Advanced Security disponível"
+            echo "available=true" >> $GITHUB_OUTPUT
+          else
+            echo "Repositório privado - Advanced Security pode requerer licença"
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "Para habilitar o GitHub Advanced Security:"
+            echo "1. Acesse Settings > Security > Code security and analysis"
+            echo "2. Ative 'GitHub Advanced Security'"
+            echo "3. Em repositórios privados, isso pode ter custo adicional"
+          fi
+
+  # Job condicional - só executa se o Advanced Security estiver disponível
+  codeql-analysis:
+    name: Análise CodeQL
+    needs: flutter-security-check
+    if: always() && needs.flutter-security-check.outputs.available == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+      
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'dart' ]
+        
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v3
+        
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v3
+        continue-on-error: true
+        with:
+          languages: ${{ matrix.language }}
+          
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.3'
+          channel: 'stable'
+      
+      - name: Construir aplicação Flutter
+        working-directory: ./frontend/sustenta_bag_application
+        run: flutter pub get
+        continue-on-error: true
+          
+      - name: Realizar Análise CodeQL
+        uses: github/codeql-action/analyze@v3
+        continue-on-error: true
+        with:
+          category: "/language:${{matrix.language}}"
