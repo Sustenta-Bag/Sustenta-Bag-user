@@ -538,23 +538,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ needs.tag-branch.outputs.created_tag }}
       
-      - name: Configurar Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.19.3'
-          channel: 'stable'
-      
-      - name: Gerar Build Web (Simples)
-        working-directory: ./frontend/sustenta_bag_application
-        run: |
-          flutter pub get
-          flutter build web --release
-          
-          # Compactar os arquivos web para a release
-          cd build/web
-          zip -r ../web-release.zip .
-          cd ../..
-      
       - name: Gerar changelog
         id: changelog
         run: |
@@ -584,7 +567,5 @@ jobs:
           body_path: changelog.md
           draft: false
           prerelease: ${{ startsWith(needs.tag-branch.outputs.created_tag, 'dev-') || startsWith(needs.tag-branch.outputs.created_tag, 'feature-') || startsWith(needs.tag-branch.outputs.created_tag, 'hotfix-') }}
-          files: |
-            frontend/sustenta_bag_application/build/web-release.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
