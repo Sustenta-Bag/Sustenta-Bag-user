@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustenta_bag_application/components/navbar.dart';
 
 class BagScreen extends StatefulWidget {
   const BagScreen({super.key});
@@ -30,18 +31,13 @@ class _BagScreenState extends State<BagScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.orange[50],
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Sacola',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-        ),
+        title: const Text('Sacolas'),
         centerTitle: true,
+        backgroundColor: Colors.white,
+        automaticallyImplyLeading: false, 
       ),
+      backgroundColor:
+          const Color(0xFFFFFFFF), 
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -141,6 +137,25 @@ class _BagScreenState extends State<BagScreen> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 2,
+        onItemSelected: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/history');
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/bag');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/profile');
+              break;
+          }
+        },
       ),
     );
   }

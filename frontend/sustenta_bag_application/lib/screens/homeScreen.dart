@@ -241,21 +241,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
       ),
       bottomNavigationBar: BottomNavBar(
+        currentIndex: 0, 
         onItemSelected: (index) {
           switch (index) {
             case 0:
-              Navigator.pushReplacementNamed(context, '/home');
+              Navigator.pushNamed(context, '/home');
               break;
             case 1:
-              Navigator.pushReplacementNamed(context, '/history');
+              Navigator.pushNamed(context, '/history');
               break;
             case 2:
-              Navigator.pushReplacementNamed(context, '/bag');
+              Navigator.pushNamed(context, '/bag');
               break;
             case 3:
-              Navigator.pushReplacementNamed(context, '/user');
-              break;
-            default:
+              Navigator.pushNamed(context, '/profile');
               break;
           }
         },
