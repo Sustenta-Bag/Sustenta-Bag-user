@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:sustenta_bag_application/screens/FavoritesScreen.dart';
 import 'package:sustenta_bag_application/screens/Register/RegisterStep1.dart';
 import 'package:sustenta_bag_application/screens/Register/RegisterStep2.dart';
 import 'package:sustenta_bag_application/screens/Register/RegisterStep3.dart';
+import 'package:sustenta_bag_application/screens/profileScreen.dart';
 import 'screens/IntroScreen.dart';
 import 'screens/LoginScreen.dart';
 import 'screens/homeScreen.dart';
 import 'screens/bag/BagScreen.dart';
 import 'screens/bag/DeliveryOptionsScreen.dart';
 import 'screens/bag/ReviewOrderScreen.dart';
-import 'screens/bag/PaymentScreen.dart'; // 👈 adicione isso no topo
+import 'screens/bag/PaymentScreen.dart'; 
 import 'screens/history/HistoryScreen.dart';
 
 void main() {
@@ -46,7 +48,7 @@ class MyApp extends StatelessWidget {
                 hasDelivery: args['hasDelivery'] ?? false,
                 userAddress: args['userAddress'] ?? '',
                 storeAddress: args['storeAddress'] ?? '',
-                subtotal: args['subtotal'] ?? 0.0, // ✅ Aqui
+                subtotal: args['subtotal'] ?? 0.0, 
               ),
             );
 
@@ -72,6 +74,12 @@ class MyApp extends StatelessWidget {
 
           case '/register3':
             return MaterialPageRoute(builder: (context) => RegisterStep3());
+
+          case '/profile':
+            return MaterialPageRoute(builder: (context) => ProfileScreen());
+
+          case '/favorites':
+            return MaterialPageRoute(builder: (context) => FavoritesScreen());
 
           default:
             return MaterialPageRoute(builder: (context) => const IntroScreen());

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustenta_bag_application/components/navbar.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -20,15 +21,13 @@ class HistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text(
-          'Status do Pedido',
-          style: TextStyle(
-              fontWeight: FontWeight.bold, color: Colors.black, fontSize: 20),
-        ),
+        title: const Text('Status do Pedido'),
         centerTitle: true,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        automaticallyImplyLeading: false, 
       ),
+      backgroundColor:
+          const Color(0xFFFFFFFF),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -74,6 +73,25 @@ class HistoryScreen extends StatelessWidget {
                 )),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 1, 
+        onItemSelected: (index) {
+          switch (index) {
+            case 0:
+              Navigator.pushNamed(context, '/home');
+              break;
+            case 1:
+              Navigator.pushNamed(context, '/history');
+              break;
+            case 2:
+              Navigator.pushNamed(context, '/bag');
+              break;
+            case 3:
+              Navigator.pushNamed(context, '/profile');
+              break;
+          }
+        },
       ),
     );
   }
