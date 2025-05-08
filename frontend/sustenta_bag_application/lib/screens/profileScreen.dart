@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sustenta_bag_application/components/navbar.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -13,13 +12,10 @@ class ProfileScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
       ),
-      backgroundColor:
-          const Color(0xFFFFFFFF), 
+      backgroundColor: const Color(0xFFFFFFFF),
       body: Center(
         child: ElevatedButton.icon(
-          onPressed: () {
-            Navigator.pushNamed(context, '/favorites');
-          },
+          onPressed: () => Navigator.pushNamed(context, '/favorites'),
           icon: const Icon(Icons.favorite, color: Color(0xFFE8514C)),
           label: const Text('Favoritos'),
           style: ElevatedButton.styleFrom(
@@ -32,24 +28,6 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: 3,
-        onItemSelected: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushNamed(context, '/home');
-              break;
-            case 1:
-              Navigator.pushNamed(context, '/history');
-              break;
-            case 2:
-              Navigator.pushNamed(context, '/bag');
-              break;
-            case 3:
-              break;
-          }
-        },
       ),
     );
   }

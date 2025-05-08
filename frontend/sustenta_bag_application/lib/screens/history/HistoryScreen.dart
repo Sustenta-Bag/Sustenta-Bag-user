@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sustenta_bag_application/components/navbar.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -24,16 +23,14 @@ class HistoryScreen extends StatelessWidget {
         title: const Text('Status do Pedido'),
         centerTitle: true,
         backgroundColor: Colors.white,
-        automaticallyImplyLeading: false, 
+        automaticallyImplyLeading: false,
       ),
-      backgroundColor:
-          const Color(0xFFFFFFFF),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // STATUS ATUAL
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -62,7 +59,6 @@ class HistoryScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // LISTA DINÂMICA
             ...orderHistory.map((order) => Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: _buildHistoryItem(
@@ -73,25 +69,6 @@ class HistoryScreen extends StatelessWidget {
                 )),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: 1, 
-        onItemSelected: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushNamed(context, '/home');
-              break;
-            case 1:
-              Navigator.pushNamed(context, '/history');
-              break;
-            case 2:
-              Navigator.pushNamed(context, '/bag');
-              break;
-            case 3:
-              Navigator.pushNamed(context, '/profile');
-              break;
-          }
-        },
       ),
     );
   }
