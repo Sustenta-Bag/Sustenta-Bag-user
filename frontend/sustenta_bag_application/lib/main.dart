@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/AppShell.dart' show AppShell;
+import 'package:sustenta_bag_application/screens/ReviewScreen.dart';
 import 'screens/IntroScreen.dart';
 import 'screens/LoginScreen.dart';
 import 'screens/Register/RegisterStep1.dart';
@@ -50,6 +51,12 @@ class MyApp extends StatelessWidget {
               builder: (_) => ReviewOrderScreen(
                 subtotal: args['subtotal'] ?? 0.0,
                 deliveryFee: args['deliveryFee'] ?? 0.0,
+              ),
+            );
+          case '/review':
+            return MaterialPageRoute(
+              builder: (_) => ReviewScreen(
+                estabelecimento: args['estabelecimento'] ?? 'Estabelecimento',
               ),
             );
           default:

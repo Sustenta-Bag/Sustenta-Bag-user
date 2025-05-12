@@ -3,7 +3,7 @@ import 'components/navbar.dart';
 import 'screens/homeScreen.dart';
 import 'screens/history/HistoryScreen.dart';
 import 'screens/bag/BagScreen.dart';
-import 'screens/profileScreen.dart';
+import 'screens/ProfileScreen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({Key? key}) : super(key: key);
