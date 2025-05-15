@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/AppShell.dart' show AppShell;
+import 'package:sustenta_bag_application/screens/ReviewScreen.dart';
+import 'package:sustenta_bag_application/screens/StoreScreen.dart';
 import 'screens/IntroScreen.dart';
 import 'screens/LoginScreen.dart';
 import 'screens/Register/RegisterStep1.dart';
@@ -52,6 +54,24 @@ class MyApp extends StatelessWidget {
                 deliveryFee: args['deliveryFee'] ?? 0.0,
               ),
             );
+          case '/review':
+            return MaterialPageRoute(
+              builder: (_) => ReviewScreen(
+                estabelecimento: args['estabelecimento'] ?? 'Estabelecimento',
+              ),
+            );
+          case '/store':
+            return MaterialPageRoute(
+              builder: (_) => StoreScreen(
+                id: args['id'],
+                storeName: args['storeName'],
+                storeLogo: args['storeLogo'],
+                storeDescription: args['storeDescription'],
+                rating: args['rating'],
+                workingHours: args['workingHours'],
+              ),
+            );
+
           default:
             return null;
         }

@@ -16,7 +16,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     super.initState();
     _controller = VideoPlayerController.asset('assets/payment.mp4')
       ..initialize().then((_) {
-        setState(() {}); // Atualiza quando o vídeo estiver pronto
+        setState(() {}); 
         _controller.play();
         _controller.setLooping(true);
       });
@@ -56,6 +56,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: const Text('Aguardando Pagamento'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
