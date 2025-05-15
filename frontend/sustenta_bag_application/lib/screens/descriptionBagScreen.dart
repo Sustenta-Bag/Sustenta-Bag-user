@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustenta_bag_application/screens/StoreScreen.dart';
 
 class DescriptionBagScreen extends StatefulWidget {
   final String id;
@@ -27,8 +28,6 @@ class DescriptionBagScreen extends StatefulWidget {
 }
 
 class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
-  bool isFavorite = false;
-
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
@@ -43,19 +42,6 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: isFavorite ? Colors.red : Colors.black,
-            ),
-            onPressed: () {
-              setState(() {
-                isFavorite = !isFavorite;
-              });
-            },
-          ),
-        ],
       ),
       body: Stack(
         alignment: Alignment.center,
@@ -82,10 +68,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-
-              /// Imagem principal do produto
               Image.asset(widget.imagePath, width: 250),
-
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(10),
@@ -130,15 +113,31 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                   ),
                                 ],
                               ),
-                              // "Ver Loja" + "Retirada no Local"
                               Row(
                                 children: [
                                   TextButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => StoreScreen(
+                                            id: widget.id,
+                                            storeName: widget.storeName,
+                                            storeLogo: widget.storeLogo,
+                                            storeDescription:
+                                                'Sed id faucibus lacus, vitae accumsan turpis. Donec varius neque nec mi consectetur volutpat.',
+                                            rating: 4.8,
+                                            workingHours: '18:00 às 23:30',
+                                          ),
+                                        ),
+                                      );
+                                    },
                                     child: const Text(
                                       'Ver Loja',
                                       style: TextStyle(
                                         decoration: TextDecoration.underline,
+                                        color: Colors.black,
+                                        fontSize: 14,
                                       ),
                                     ),
                                   ),
@@ -153,7 +152,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                           const SizedBox(height: 10),
                           const Text(
                             'Atenção! Contém leite e derivados.',
-                            style: TextStyle(color: Colors.red, fontSize: 12),
+                            style: TextStyle(color: Colors.red, fontSize: 20),
                           ),
                         ],
                       ),

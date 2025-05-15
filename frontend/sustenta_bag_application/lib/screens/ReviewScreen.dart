@@ -52,7 +52,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           children: [
             const Text(
               'Quantas estrelas você dá?',
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(fontSize: 19),
             ),
             Row(
               children: List.generate(5, (index) => _buildStar(index + 1)),
