@@ -30,135 +30,164 @@ class DescriptionBagScreen extends StatefulWidget {
 class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      backgroundColor: Colors.amber[50],
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Stack(
-        alignment: Alignment.center,
-        clipBehavior: Clip.none,
-        children: [
-          Positioned(
-            top: -50,
-            left: -screenWidth * 0.05,
-            right: -screenWidth * 0.05,
-            child: Image.asset(
-              'assets/detail.png',
-              width: screenWidth * 1,
-              fit: BoxFit.contain,
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                widget.title,
-                style: const TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                ),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-              Image.asset(widget.imagePath, width: 250),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(10),
-                height: screenHeight * 0.40,
+            ),
+            Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  top:
+                      -25, // valor menos negativo para deixar a imagem mais baixa
+                  left: -MediaQuery.of(context).size.width * 0.35,
+                  right: -MediaQuery.of(context).size.width * 0.35,
+                  child: Image.asset(
+                    'assets/detail.png',
+                    width: MediaQuery.of(context).size.width * 1.8,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                Positioned(
+                  top: 30,
+                  child: Text(
+                    widget.title,
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF225C4B),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 100.0),
+                  child: Image.asset(
+                    widget.imagePath,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                 ),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // Logo + Nome da Loja
-                              Row(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: Image.asset(
-                                      widget.storeLogo,
-                                      width: 30,
-                                      height: 30,
-                                      fit: BoxFit.cover,
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 242, 241, 241),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color.fromARGB(255, 117, 116, 116)
+                                  .withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.asset(
+                                widget.storeLogo,
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              widget.storeName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => StoreScreen(
+                                      id: widget.id,
+                                      storeName: widget.storeName,
+                                      storeLogo: widget.storeLogo,
+                                      storeDescription:
+                                          'Sed id faucibus lacus, vitae accumsan turpis. Donec varius neque nec mi consectetur volutpat.',
+                                      rating: 4.8,
+                                      workingHours: '18:00 às 23:30',
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    widget.storeName,
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600),
-                                  ),
-                                ],
+                                );
+                              },
+                              child: const Text(
+                                'Ver Loja',
+                                style: TextStyle(
+                                  color: Color(0xFF225C4B),
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              Row(
-                                children: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => StoreScreen(
-                                            id: widget.id,
-                                            storeName: widget.storeName,
-                                            storeLogo: widget.storeLogo,
-                                            storeDescription:
-                                                'Sed id faucibus lacus, vitae accumsan turpis. Donec varius neque nec mi consectetur volutpat.',
-                                            rating: 4.8,
-                                            workingHours: '18:00 às 23:30',
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: const Text(
-                                      'Ver Loja',
-                                      style: TextStyle(
-                                        decoration: TextDecoration.underline,
-                                        color: Colors.black,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(widget.description,
-                              style: const TextStyle(fontSize: 14)),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'Atenção! Contém leite e derivados.',
-                            style: TextStyle(color: Colors.red, fontSize: 20),
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Text(
+                        widget.description,
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Atenção! Contém leite e derivados.',
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
                       child: Row(
                         children: [
                           Expanded(
@@ -168,21 +197,22 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
+                                padding: EdgeInsets.symmetric(vertical: 12),
                               ),
                               onPressed: () {
                                 // Lógica para adicionar à sacola
                               },
-                              child: const Padding(
-                                padding: EdgeInsets.all(5.0),
-                                child: Text(
-                                  'Adicionar à Sacola',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Colors.white),
+                              child: const Text(
+                                'Adicionar à Sacola',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
@@ -190,16 +220,17 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
+                                padding: EdgeInsets.symmetric(vertical: 12),
                               ),
                               onPressed: () {
                                 // Lógica para compra
                               },
-                              child: Container(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Text(
-                                  'Comprar  R\$${widget.price.toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                      fontSize: 12, color: Colors.white),
+                              child: Text(
+                                'Comprar R\$${widget.price.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
@@ -210,9 +241,9 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                   ],
                 ),
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }

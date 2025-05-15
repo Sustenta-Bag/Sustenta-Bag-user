@@ -18,7 +18,9 @@ class DeliveryOptionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: const Text(
           'Opções de Entrega',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -70,7 +72,7 @@ class DeliveryOptionScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(child: Text(storeAddress)),
-                  const Icon(Icons.check_circle, color: Colors.pink),
+                  const Icon(Icons.check_circle, color: Colors.red),
                 ],
               ),
             ),
@@ -121,7 +123,7 @@ class DeliveryOptionScreen extends StatelessWidget {
                       onPressed: () {},
                       child: const Text(
                         'Trocar',
-                        style: TextStyle(color: Colors.blue),
+                        style: TextStyle(color: Colors.red),
                       ),
                     ),
                   ],
