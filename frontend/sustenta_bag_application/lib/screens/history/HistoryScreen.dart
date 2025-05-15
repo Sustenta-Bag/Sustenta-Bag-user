@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustenta_bag_application/screens/ReviewScreen.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -20,25 +21,21 @@ class HistoryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text(
-          'Status do Pedido',
-          style: TextStyle(
-              fontWeight: FontWeight.bold, color: Colors.black, fontSize: 20),
-        ),
+        title: const Text('Status do Pedido'),
         centerTitle: true,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        automaticallyImplyLeading: false,
       ),
+      backgroundColor: const Color(0xFFFFFFFF),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // STATUS ATUAL
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange[50],
+                color: const Color(0xFFF2F2F2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Column(
@@ -53,20 +50,16 @@ class HistoryScreen extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 32),
-
-            // HISTÓRICO
             const Text(
               'Histórico',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
-
-            // LISTA DINÂMICA
             ...orderHistory.map((order) => Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: _buildHistoryItem(
+                    context,
                     date: order['date']!,
                     title: order['title']!,
                     subtitle: order['subtitle']!,
@@ -78,7 +71,8 @@ class HistoryScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHistoryItem({
+  Widget _buildHistoryItem(
+    BuildContext context, {
     required String date,
     required String title,
     required String subtitle,
@@ -94,7 +88,7 @@ class HistoryScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.orange[50],
+            color: const Color(0xFFF2F2F2),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
@@ -114,13 +108,25 @@ class HistoryScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Divider(),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Fazer avaliação',
-                  style: TextStyle(
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ReviewScreen(estabelecimento: title),
+                    ),
+                  );
+                },
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Fazer avaliação',
+                    style: TextStyle(
                       decoration: TextDecoration.underline,
-                      color: Colors.black),
+                      color: Colors.black,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 4),

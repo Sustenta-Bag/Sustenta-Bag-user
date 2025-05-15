@@ -2,17 +2,23 @@ import 'package:flutter/material.dart';
 
 class BottomNavBar extends StatelessWidget {
   final Function(int) onItemSelected;
-  const BottomNavBar({super.key, required this.onItemSelected});
+  final int currentIndex;
+
+  const BottomNavBar({
+    super.key,
+    required this.onItemSelected,
+    required this.currentIndex,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80, // Ajuste da altura da navbar
+      height: 80,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFEBAE43), Color(0xFFEA7672)], // Gradiente
-          begin: Alignment.topLeft, // Começa no topo esquerdo
-          end: Alignment.bottomRight, // Termina no canto inferior direito
+          colors: [Color(0xFFEBAE43), Color(0xFFEA7672)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),
@@ -20,8 +26,7 @@ class BottomNavBar extends StatelessWidget {
         ),
       ),
       child: Row(
-        mainAxisAlignment:
-            MainAxisAlignment.spaceEvenly, // Distribui os botões igualmente
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildNavItem(Icons.home, 0),
           _buildNavItem(Icons.list, 1),
@@ -33,11 +38,29 @@ class BottomNavBar extends StatelessWidget {
   }
 
   Widget _buildNavItem(IconData icon, int index) {
-    return IconButton(
-      icon: Icon(icon, color: Colors.white, size: 30),
-      onPressed: () {
-        onItemSelected(index);
-      },
+    final isSelected = index == currentIndex;
+
+    return GestureDetector(
+      onTap: () => onItemSelected(index),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (isSelected)
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3), 
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          Icon(
+            icon,
+            color: Colors.white,
+            size: isSelected ? 36 : 30,
+          ),
+        ],
+      ),
     );
   }
 }
