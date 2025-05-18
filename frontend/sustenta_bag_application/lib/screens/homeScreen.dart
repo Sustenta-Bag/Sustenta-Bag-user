@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../components/bagCard.dart';
+import '../utils/firebase_messaging_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -103,7 +104,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () {},
+            onPressed: () async {
+              // Show loading indicator
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Configurando notificações...'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+              
+              // Send FCM token to server
+              final success = await FirebaseMessagingService.sendFCMTokenToServer();
+              
+              // Show result to user
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Notificações configuradas com sucesso!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Falha ao configurar notificações. Tente novamente.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
           ),
         ],
       ),
