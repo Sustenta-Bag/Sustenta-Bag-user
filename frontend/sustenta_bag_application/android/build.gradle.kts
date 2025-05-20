@@ -1,3 +1,4 @@
+
 allprojects {
     repositories {
         google()
@@ -14,6 +15,11 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+      tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.removeAll(listOf("-Werror"))
+    options.compilerArgs.addAll(listOf("-Xlint:-options"))
+}
+
 }
 
 tasks.register<Delete>("clean") {
