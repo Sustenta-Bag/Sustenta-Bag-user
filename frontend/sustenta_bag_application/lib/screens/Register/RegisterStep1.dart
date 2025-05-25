@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sustenta_bag_application/utils/validators.dart';
+import 'package:sustenta_bag_application/utils/formatters.dart';
 
 class RegisterStep1 extends StatefulWidget {
   const RegisterStep1({super.key});
@@ -11,13 +13,14 @@ class RegisterStep1 extends StatefulWidget {
 class _RegisterStep1State extends State<RegisterStep1> {
   final _formKey = GlobalKey<FormState>();
   final _nomeController = TextEditingController();
+  final _cpfController = TextEditingController();
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   final _confirmarSenhaController = TextEditingController();
-
   @override
   void dispose() {
     _nomeController.dispose();
+    _cpfController.dispose();
     _emailController.dispose();
     _senhaController.dispose();
     _confirmarSenhaController.dispose();
@@ -56,6 +59,15 @@ class _RegisterStep1State extends State<RegisterStep1> {
               ),
               const SizedBox(height: 30),
               _buildTextFormField(
+                controller: _cpfController,
+                label: "CPF",
+                hint: "000.000.000-00",
+                validator: Validators.validateCpf,
+                keyboardType: TextInputType.number,
+                inputFormatters: [CpfInputFormatter()],
+              ),
+              const SizedBox(height: 30),
+              _buildTextFormField(
                 controller: _emailController,
                 label: "Email",
                 hint: "email@exemplo.com",
@@ -91,8 +103,9 @@ class _RegisterStep1State extends State<RegisterStep1> {
                         '/register2',
                         arguments: {
                           'nome': _nomeController.text,
+                          'cpf': _cpfController.text,
                           'email': _emailController.text,
-                          'senha': _senhaController.text,
+                          'password': _senhaController.text,
                         },
                       );
                     }
@@ -122,6 +135,7 @@ class _RegisterStep1State extends State<RegisterStep1> {
     required String? Function(String?) validator,
     bool isPassword = false,
     TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,6 +147,7 @@ class _RegisterStep1State extends State<RegisterStep1> {
           controller: controller,
           obscureText: isPassword,
           keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
           validator: validator,
           decoration: InputDecoration(
             hintText: hint,

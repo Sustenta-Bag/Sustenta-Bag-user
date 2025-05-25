@@ -62,9 +62,7 @@ class _RegisterStep2State extends State<RegisterStep2> {
     });
 
     try {
-      final endereco = await CepService.buscarEndereco(cep);
-
-      if (endereco != null) {
+      final endereco = await CepService.buscarEndereco(cep);      if (endereco != null) {
         setState(() {
           _ruaController.text = endereco['logradouro'] ?? '';
           userData['bairro'] = endereco['bairro'] ?? '';

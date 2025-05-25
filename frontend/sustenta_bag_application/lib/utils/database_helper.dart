@@ -17,7 +17,7 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'sustenta_bag.db');
+    String path = join(await getDatabasesPath(), 'sustenta_bag1.db');
     return await openDatabase(
       path,
       version: 1,
@@ -46,6 +46,8 @@ class DatabaseHelper {
         name TEXT,
         email TEXT,
         cpf TEXT,
+        phone TEXT,
+        idAddress INTEGER,
         status TEXT,
         createdAt INTEGER
       )
@@ -86,12 +88,15 @@ class DatabaseHelper {
     
     // Delete existing entity data
     await db.delete('entity');
+    print(entity);
     
     return await db.insert('entity', {
       'id': entity['id'],
       'name': entity['name'],
       'email': entity['email'],
       'cpf': entity['cpf'],
+      'phone': entity['phone'],
+      'idAddress': entity['idAddress'],
       'status': entity['status'],
       'createdAt': entity['createdAt'],
     });
