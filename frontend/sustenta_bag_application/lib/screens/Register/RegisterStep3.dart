@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../utils/auth_service.dart';
+import '../../utils/estados_brasil.dart';
 
 class RegisterStep3 extends StatefulWidget {
   const RegisterStep3({super.key});
@@ -11,7 +12,7 @@ class RegisterStep3 extends StatefulWidget {
 class _RegisterStep3State extends State<RegisterStep3> {
   final _formKey = GlobalKey<FormState>();
   final _bairroController = TextEditingController();
-  final _estadoController = TextEditingController();
+  String? _estadoSelecionado;
   final _complementoController = TextEditingController();
   final _cidadeController = TextEditingController();
 
@@ -26,7 +27,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
       userData = args;
 
       _bairroController.text = userData['bairro'] ?? '';
-      _estadoController.text = userData['estado'] ?? '';
+      _estadoSelecionado = userData['estado'] ?? 'PE';
       _cidadeController.text = userData['cidade'] ?? '';
     }
   }
@@ -34,7 +35,6 @@ class _RegisterStep3State extends State<RegisterStep3> {
   @override
   void dispose() {
     _bairroController.dispose();
-    _estadoController.dispose();
     _complementoController.dispose();
     _cidadeController.dispose();
     super.dispose();
@@ -45,17 +45,15 @@ class _RegisterStep3State extends State<RegisterStep3> {
       setState(() {
         _isLoading = true;
       });
-
       try {
         final dadosCompletos = {
           ...userData,
           'bairro': _bairroController.text,
-          'estado': _estadoController.text,
+          'estado': _estadoSelecionado,
           'complemento': _complementoController.text,
           'cidade': _cidadeController.text,
         };
 
-        // Montar payload conforme esperado pela API
         final payload = {
           "entityType": "client",
           "userData": {
@@ -64,7 +62,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
           },
           "entityData": {
             "name": dadosCompletos["nome"],
-            "cpf": "11170187111", // dadosCompletos["cpf"]
+            "cpf": retirarRegex(dadosCompletos["cpf"]),
             "phone": retirarRegex(dadosCompletos["telefone"]),
             "idAddress": {
               "zipCode": retirarRegex(dadosCompletos["cep"]),
@@ -83,11 +81,8 @@ class _RegisterStep3State extends State<RegisterStep3> {
         final result = await AuthService.register(payload);
 
         if (result != null && result['error'] == null) {
-          // Registro bem sucedido, fazer login automático
           final loginResult = await AuthService.login(
-            dadosCompletos["email"],
-            dadosCompletos["password"]
-          );
+              dadosCompletos["email"], dadosCompletos["password"]);
 
           if (loginResult != null && loginResult['error'] == null) {
             if (!mounted) return;
@@ -95,7 +90,9 @@ class _RegisterStep3State extends State<RegisterStep3> {
           } else {
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(loginResult?['error'] ?? 'Erro ao fazer login automático')),
+              SnackBar(
+                  content: Text(loginResult?['error'] ??
+                      'Erro ao fazer login automático')),
             );
             Navigator.pushReplacementNamed(context, '/login');
           }
@@ -160,17 +157,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                         },
                       ),
                       const SizedBox(height: 30),
-                      _buildTextFormField(
-                        controller: _estadoController,
-                        label: "Estado",
-                        hint: "UF",
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Estado é obrigatório';
-                          }
-                          return null;
-                        },
-                      ),
+                      _buildDropdownField(),
                       const SizedBox(height: 30),
                       _buildTextFormField(
                         controller: _complementoController,
@@ -203,7 +190,8 @@ class _RegisterStep3State extends State<RegisterStep3> {
                             ),
                           ),
                           child: const Text("Criar Conta",
-                              style: TextStyle(fontSize: 18, color: Colors.white)),
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white)),
                         ),
                       ),
                     ],
@@ -250,6 +238,56 @@ class _RegisterStep3State extends State<RegisterStep3> {
               borderSide: const BorderSide(color: Colors.red),
             ),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Estado",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 5),
+        DropdownButtonFormField<String>(
+          value: _estadoSelecionado?.isNotEmpty == true
+              ? _estadoSelecionado
+              : null,
+          hint: const Text("Selecione um estado"),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: const Color(0xFFF2F2F2),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide.none,
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+          ),
+          items: EstadosBrasil.getDropdownItems(),
+          onChanged: (String? newValue) {
+            setState(() {
+              print("Estado selecionado: $newValue");
+              _estadoSelecionado = newValue;
+              userData['estado'] = newValue;
+              print("Estado selecionado atualizado: $_estadoSelecionado");
+            });
+          },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Estado é obrigatório';
+            }
+            return null;
+          },
         ),
       ],
     );
