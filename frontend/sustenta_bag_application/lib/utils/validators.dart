@@ -36,4 +36,40 @@ class Validators {
     if (!regex.hasMatch(value)) return 'Celular inválido';
     return null;
   }
+
+  static String? validateCpf(String? value) {
+    if (value == null || value.trim().isEmpty) return 'CPF é obrigatório';
+
+    // Remove pontos e traços
+    String cpf = value.replaceAll(RegExp(r'[.-]'), '');
+
+    // Verifica se tem 11 dígitos
+    if (cpf.length != 11) return 'CPF deve ter 11 dígitos';
+
+    // TODO : DESCOMENTAR ESSE CÓDIGO QUANDO SUBIR PARA PRODUÇÃO
+    // // Verifica se todos os dígitos são iguais
+    // if (RegExp(r'^(\d)\1*$').hasMatch(cpf)) return 'CPF inválido';
+
+    // // Validação do primeiro dígito verificador
+    // int soma = 0;
+    // for (int i = 0; i < 9; i++) {
+    //   soma += int.parse(cpf[i]) * (10 - i);
+    // }
+    // int primeiroDigito = (soma * 10) % 11;
+    // if (primeiroDigito == 10) primeiroDigito = 0;
+
+    // if (primeiroDigito != int.parse(cpf[9])) return 'CPF inválido';
+
+    // // Validação do segundo dígito verificador
+    // soma = 0;
+    // for (int i = 0; i < 10; i++) {
+    //   soma += int.parse(cpf[i]) * (11 - i);
+    // }
+    // int segundoDigito = (soma * 10) % 11;
+    // if (segundoDigito == 10) segundoDigito = 0;
+
+    // if (segundoDigito != int.parse(cpf[10])) return 'CPF inválido';
+
+    return null;
+  }
 }
