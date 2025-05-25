@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/auth_service.dart';
 
 class RegisterStep3 extends StatefulWidget {
   const RegisterStep3({super.key});
@@ -15,6 +16,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
   final _cidadeController = TextEditingController();
 
   Map<String, dynamic> userData = {};
+  bool _isLoading = false;
 
   @override
   void didChangeDependencies() {
@@ -38,25 +40,87 @@ class _RegisterStep3State extends State<RegisterStep3> {
     super.dispose();
   }
 
-  void _finalizarCadastro() {
+  Future<void> _finalizarCadastro() async {
     if (_formKey.currentState!.validate()) {
-      final dadosCompletos = {
-        ...userData,
-        'bairro': _bairroController.text,
-        'estado': _estadoController.text,
-        'complemento': _complementoController.text,
-        'cidade': _cidadeController.text,
-      };
+      setState(() {
+        _isLoading = true;
+      });
 
-      // Usar os dados do cadastro (exemplo para resolver warning)
-      print('Cadastro finalizado com os dados: $dadosCompletos');
+      try {
+        final dadosCompletos = {
+          ...userData,
+          'bairro': _bairroController.text,
+          'estado': _estadoController.text,
+          'complemento': _complementoController.text,
+          'cidade': _cidadeController.text,
+        };
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cadastro realizado com sucesso!')),
-      );
+        // Montar payload conforme esperado pela API
+        final payload = {
+          "entityType": "client",
+          "userData": {
+            "email": dadosCompletos["email"],
+            "password": dadosCompletos["password"]
+          },
+          "entityData": {
+            "name": dadosCompletos["nome"],
+            "cpf": "11170187111", // dadosCompletos["cpf"]
+            "phone": retirarRegex(dadosCompletos["telefone"]),
+            "idAddress": {
+              "zipCode": retirarRegex(dadosCompletos["cep"]),
+              "state": dadosCompletos["estado"],
+              "city": dadosCompletos["cidade"],
+              "street": dadosCompletos["rua"],
+              "number": dadosCompletos["numero"],
+              "complement": dadosCompletos["complemento"]
+            },
+            "status": 1
+          }
+        };
 
-      Navigator.pushReplacementNamed(context, '/home');
+        print("Payload: $payload");
+
+        final result = await AuthService.register(payload);
+
+        if (result != null && result['error'] == null) {
+          // Registro bem sucedido, fazer login automático
+          final loginResult = await AuthService.login(
+            dadosCompletos["email"],
+            dadosCompletos["password"]
+          );
+
+          if (loginResult != null && loginResult['error'] == null) {
+            if (!mounted) return;
+            Navigator.pushReplacementNamed(context, '/home');
+          } else {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(loginResult?['error'] ?? 'Erro ao fazer login automático')),
+            );
+            Navigator.pushReplacementNamed(context, '/login');
+          }
+        } else {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(result?['error'] ?? 'Erro ao registrar')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro: ${e.toString()}')),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
+  }
+
+  String retirarRegex(String telefone) {
+    return telefone.replaceAll(RegExp(r'[^0-9]'), '');
   }
 
   @override
@@ -74,77 +138,79 @@ class _RegisterStep3State extends State<RegisterStep3> {
           style: TextStyle(color: Colors.black, fontSize: 25),
         ),
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildTextFormField(
-                  controller: _bairroController,
-                  label: "Bairro",
-                  hint: "Nome do bairro",
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Bairro é obrigatório';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 30),
-                _buildTextFormField(
-                  controller: _estadoController,
-                  label: "Estado",
-                  hint: "UF",
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Estado é obrigatório';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 30),
-                _buildTextFormField(
-                  controller: _complementoController,
-                  label: "Complemento",
-                  hint: "Casa, Apto, etc.",
-                  validator: null,
-                ),
-                const SizedBox(height: 30),
-                _buildTextFormField(
-                  controller: _cidadeController,
-                  label: "Cidade",
-                  hint: "Nome da cidade",
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Cidade é obrigatória';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _finalizarCadastro,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE8514C),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildTextFormField(
+                        controller: _bairroController,
+                        label: "Bairro",
+                        hint: "Nome do bairro",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Bairro é obrigatório';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
-                    child: const Text("Criar Conta",
-                        style: TextStyle(fontSize: 18, color: Colors.white)),
+                      const SizedBox(height: 30),
+                      _buildTextFormField(
+                        controller: _estadoController,
+                        label: "Estado",
+                        hint: "UF",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Estado é obrigatório';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 30),
+                      _buildTextFormField(
+                        controller: _complementoController,
+                        label: "Complemento",
+                        hint: "Casa, Apto, etc.",
+                        validator: null,
+                      ),
+                      const SizedBox(height: 30),
+                      _buildTextFormField(
+                        controller: _cidadeController,
+                        label: "Cidade",
+                        hint: "Nome da cidade",
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Cidade é obrigatória';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 40),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _finalizarCadastro,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE8514C),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: const Text("Criar Conta",
+                              style: TextStyle(fontSize: 18, color: Colors.white)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 

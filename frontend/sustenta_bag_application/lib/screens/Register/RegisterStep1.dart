@@ -92,7 +92,7 @@ class _RegisterStep1State extends State<RegisterStep1> {
                         arguments: {
                           'nome': _nomeController.text,
                           'email': _emailController.text,
-                          'senha': _senhaController.text,
+                          'password': _senhaController.text,
                         },
                       );
                     }
