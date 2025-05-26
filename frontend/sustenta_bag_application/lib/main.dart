@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sustenta_bag_application/AppShell.dart' show AppShell;
 import 'package:sustenta_bag_application/screens/ReviewScreen.dart';
+import 'package:sustenta_bag_application/screens/ShowReviewScreen.dart';
 import 'package:sustenta_bag_application/screens/StoreScreen.dart';
 import 'package:sustenta_bag_application/firebase_options.dart';
 import 'package:sustenta_bag_application/utils/firebase_messaging_service.dart';
@@ -24,20 +25,20 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    
+
     // Initialize Firebase Messaging
     await FirebaseMessagingService.initialize();
-    
+
     // Print the FCM token for testing purposes
     final fcmToken = FirebaseMessagingService.token;
     print('FCM Token for Testing: $fcmToken');
-    
+
   } catch (e) {
     print('Error initializing Firebase: $e');
     // Continue even if Firebase initialization fails
     // This ensures the app can still run without Firebase
   }
-  
+
   runApp(const MyApp());
 }
 
@@ -83,6 +84,14 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (_) => ReviewScreen(
                 estabelecimento: args['estabelecimento'] ?? 'Estabelecimento',
+                estabelecimentoId: args['estabelecimentoId'] ?? '',
+              ),
+            );
+          case '/showReviews':
+            return MaterialPageRoute(
+              builder: (_) => ShowReviewScreen(
+                storeId: args['storeId'] ?? '',
+                storeName: args['storeName'] ?? 'Estabelecimento',
               ),
             );
           case '/store':
