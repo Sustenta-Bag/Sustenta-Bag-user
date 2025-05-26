@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'ShowReviewScreen.dart';
+
 class StoreScreen extends StatefulWidget {
   final String id;
   final String storeName;
@@ -164,27 +166,38 @@ class _StoreScreenState extends State<StoreScreen> {
                             ),
                             const SizedBox(width: 8),
 
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.star,
-                                      color: Colors.amber, size: 16),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    widget.rating.toString(),
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
+                            InkWell(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ShowReviewScreen(
+                                      storeId: widget.id,
+                                      storeName: widget.storeName,
+                                    ),
                                   ),
-                                ],
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.grey.shade300),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.star, color: Colors.amber, size: 16),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      widget.rating.toString(),
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
+
                             const Spacer(),
 
                             TextButton(
