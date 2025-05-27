@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:sustenta_bag_application/models/nearby_bag.dart';
 
 import 'ShowReviewScreen.dart';
 
@@ -10,6 +11,7 @@ class StoreScreen extends StatefulWidget {
   final String storeDescription;
   final double rating;
   final String workingHours;
+  final Business business;
 
   const StoreScreen({
     super.key,
@@ -19,6 +21,7 @@ class StoreScreen extends StatefulWidget {
     required this.storeDescription,
     required this.rating,
     required this.workingHours,
+    required this.business,
   });
 
   @override
@@ -86,7 +89,7 @@ class _StoreScreenState extends State<StoreScreen> {
                 Positioned(
                   top: 30,
                   child: Text(
-                    widget.storeName,
+                    widget.business.name,
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -98,7 +101,7 @@ class _StoreScreenState extends State<StoreScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 100.0),
                   child: Image.asset(
-                    widget.storeLogo,
+                    widget.business.logo ?? widget.storeLogo,
                     height: 200,
                     fit: BoxFit.cover,
                   ),
@@ -172,7 +175,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => ShowReviewScreen(
-                                      storeId: widget.id,
+                                      storeId: widget.business.id.toString(),
                                       storeName: widget.storeName,
                                     ),
                                   ),
