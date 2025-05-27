@@ -17,7 +17,7 @@ class LocationService {
         'limit': limit.toString(),
       };
 
-      final uri = Uri.parse('$baseUrl/location/nearby/client/bags')
+      final uri = Uri.parse('$baseUrl/locations/nearby/client/bags')
           .replace(queryParameters: queryParams);
 
       final response = await http.get(

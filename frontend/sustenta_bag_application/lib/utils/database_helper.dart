@@ -88,7 +88,6 @@ class DatabaseHelper {
     
     // Delete existing entity data
     await db.delete('entity');
-    print(entity);
     
     return await db.insert('entity', {
       'id': entity['id'],

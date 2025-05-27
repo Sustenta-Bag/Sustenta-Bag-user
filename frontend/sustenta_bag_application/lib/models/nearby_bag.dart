@@ -14,15 +14,15 @@ class Business {
     required this.distance,
     required this.address,
   });
-
   factory Business.fromJson(Map<String, dynamic> json) {
     return Business(
-      id: json['id'],
-      name: json['name'],
-      legalName: json['legalName'],
-      logo: json['logo'],
-      distance: json['distance'].toDouble(),
-      address: BusinessAddress.fromJson(json['address']),
+      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+      name: json['name']?.toString() ?? '',
+      legalName: json['legalName']?.toString() ?? '',
+      logo: json['logo']?.toString(),
+      distance: (json['distance'] is num) ? json['distance'].toDouble() : 0.0,
+      address:
+          BusinessAddress.fromJson(json['address'] as Map<String, dynamic>),
     );
   }
 
@@ -52,14 +52,13 @@ class BusinessAddress {
     required this.state,
     required this.zipCode,
   });
-
   factory BusinessAddress.fromJson(Map<String, dynamic> json) {
     return BusinessAddress(
-      street: json['street'],
-      number: json['number'],
-      city: json['city'],
-      state: json['state'],
-      zipCode: json['zipCode'],
+      street: json['street']?.toString() ?? '',
+      number: json['number']?.toString() ?? '',
+      city: json['city']?.toString() ?? '',
+      state: json['state']?.toString() ?? '',
+      zipCode: json['zipCode']?.toString() ?? '',
     );
   }
 
@@ -94,15 +93,14 @@ class NearbyBag {
     required this.createdAt,
     required this.business,
   });
-
   factory NearbyBag.fromJson(Map<String, dynamic> json) {
     return NearbyBag(
-      id: json['id'],
-      type: json['type'],
-      price: json['price'].toDouble(),
-      description: json['description'],
-      createdAt: json['createdAt'],
-      business: Business.fromJson(json['business']),
+      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+      type: json['type']?.toString() ?? '',
+      price: (json['price'] is num) ? json['price'].toDouble() : 0.0,
+      description: json['description']?.toString() ?? '',
+      createdAt: json['createdAt']?.toString() ?? '',
+      business: Business.fromJson(json['business'] as Map<String, dynamic>),
     );
   }
 
@@ -117,16 +115,36 @@ class NearbyBag {
     };
   }
 
-  // Método para converter para o formato esperado pelo BagCard
   Map<String, dynamic> toBagCardFormat() {
+    // Mapear tipo da API para categoria da UI
+    String category = _mapTypeToCategory(type);
+
     return {
       'id': id.toString(),
       'imagePath': 'assets/bag.png',
       'description': description,
       'title': business.name,
       'price': price,
-      'category': type,
+      'category': category,
+      'business': business, // Incluir o objeto business
     };
+  }
+
+  String _mapTypeToCategory(String type) {
+    switch (type.toLowerCase()) {
+      case 'doce':
+      case 'doces':
+        return 'Doces';
+      case 'salgado':
+      case 'salgados':
+        return 'Salgados';
+      case 'mista':
+      case 'mistas':
+      case 'mixta':
+        return 'Mistas';
+      default:
+        return 'Mistas';
+    }
   }
 }
 

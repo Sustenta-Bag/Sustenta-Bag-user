@@ -302,6 +302,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       title: bag['title'],
                       price: bag['price'],
                       category: bag['category'],
+                      business: bag['business'],
                     );
                   },
                 ),
