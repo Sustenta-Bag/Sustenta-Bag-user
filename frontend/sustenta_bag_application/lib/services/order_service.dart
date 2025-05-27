@@ -175,7 +175,6 @@ class OrderService {
     }
   }
 
-  // Busca pedidos ativos (pending, confirmed, preparing, ready) do usuário
   static Future<List<Order>> getActiveOrdersByUser(int userId, String token) async {
     try {
       final response = await http.get(
@@ -187,7 +186,6 @@ class OrderService {
         final List<dynamic> data = jsonDecode(response.body);
         final orders = data.map((json) => Order.fromJson(json)).toList();
         
-        // Filtra apenas pedidos ativos (não entregues ou cancelados)
         return orders.where((order) => 
           order.status == OrderStatus.pending.value ||
           order.status == OrderStatus.confirmed.value ||
@@ -199,6 +197,68 @@ class OrderService {
     } catch (e) {
       print('Erro ao buscar pedidos ativos: $e');
       return [];
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getOrderHistoryByUser(
+    int userId, 
+    String token, {
+    String? status,
+    String? startDate,
+    String? endDate,
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    try {
+      final queryParams = <String, String>{
+        'limit': limit.toString(),
+        'offset': offset.toString(),
+      };
+      
+      if (status != null) queryParams['status'] = status;
+      if (startDate != null) queryParams['startDate'] = startDate;
+      if (endDate != null) queryParams['endDate'] = endDate;
+
+      final uri = Uri.parse('$baseUrl/orders/history/user/$userId')
+          .replace(queryParameters: queryParams);
+
+      final response = await http.get(
+        uri,
+        headers: ApiConfig.getHeaders(token),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('Dados do histórico de pedidos: $data');
+        return {
+          'orders': (data['orders'] as List<dynamic>)
+              .map((json) => Order.fromJson(json))
+              .toList(),
+          'total': data['total'] ?? 0,
+          'hasMore': data['hasMore'] ?? false,
+        };
+      }
+      return null;
+    } catch (e) {
+      print('Erro ao buscar histórico de pedidos: $e');
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getOrderStatsForUser(int userId, String token) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/orders/stats/user/$userId'),
+        headers: ApiConfig.getHeaders(token),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return null;
+    } catch (e) {
+      print('Erro ao buscar estatísticas de pedidos: $e');
+      return null;
     }
   }
 }
