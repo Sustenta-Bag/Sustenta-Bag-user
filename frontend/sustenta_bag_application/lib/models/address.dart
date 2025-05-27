@@ -28,7 +28,6 @@ class Address {
       complement: json['complement'],
     );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -40,4 +39,11 @@ class Address {
       'complement': complement,
     };
   }
-} 
+
+  String get fullAddress {
+    final baseAddress = '$street, $number, $city, $state - $zipCode';
+    return complement != null && complement!.isNotEmpty
+        ? '$baseAddress ($complement)'
+        : baseAddress;
+  }
+}

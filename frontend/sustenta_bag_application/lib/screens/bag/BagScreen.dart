@@ -45,7 +45,9 @@ class _BagScreenState extends State<BagScreen>
   @override
   void didPopNext() {
     super.didPopNext();
-    _loadActiveCart();
+    if (_cartService.isEmpty) {
+      _loadActiveCart();
+    }
   }
 
   @override
@@ -74,15 +76,8 @@ class _BagScreenState extends State<BagScreen>
       if (token != null && userData != null) {
         await _cartService.loadActiveCart(userData['id'], token);
       }
-
-      if (_cartService.isEmpty) {
-        _addSampleItems();
-      }
     } catch (e) {
       print('Erro ao carregar carrinho ativo: $e');
-      if (_cartService.isEmpty) {
-        _addSampleItems();
-      }
     } finally {
       if (mounted) {
         setState(() {
@@ -90,23 +85,6 @@ class _BagScreenState extends State<BagScreen>
         });
       }
     }
-  }
-
-  void _addSampleItems() {
-    _cartService.addItem(CartItem(
-      bagId: 1,
-      name: 'Sweet Surprise',
-      price: 20.50,
-      businessId: 1,
-      description: 'Sacola doce misteriosa',
-    ));
-    _cartService.addItem(CartItem(
-      bagId: 2,
-      name: 'Salty Surprise',
-      price: 18.00,
-      businessId: 1,
-      description: 'Sacola salgada misteriosa',
-    ));
   }
 
   void _removeItem(int index) {
@@ -140,18 +118,12 @@ class _BagScreenState extends State<BagScreen>
 
       final order = _cartService.createOrder(userData['id']);
       final createdOrder = await OrderService.createOrder(order, token);
-
       if (createdOrder != null) {
-        _cartService.clear();
-
         if (mounted) {
           Navigator.pushNamed(
             context,
             '/bag/deliveryOptions',
             arguments: {
-              'hasDelivery': true,
-              'userAddress': 'Rua do Usuário, 123, Cidade, 12345678',
-              'storeAddress': 'Rua da Loja, 456, Cidade, 87654321',
               'subtotal': order.totalAmount,
               'orderId': createdOrder.id,
             },

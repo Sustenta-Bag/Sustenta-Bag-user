@@ -17,7 +17,6 @@ class CartItem {
     this.description,
   });
 
-  // Quantidade sempre 1
   int get quantity => 1;
   double get totalPrice => price;
   Map<String, dynamic> toJson() {
@@ -25,7 +24,7 @@ class CartItem {
       'bagId': bagId,
       'name': name,
       'price': price,
-      'quantity': 1, // Sempre 1
+      'quantity': 1,
       'businessId': businessId,
       'description': description,
     };
@@ -48,15 +47,15 @@ class CartService extends ChangeNotifier {
   CartService._internal();
 
   final List<CartItem> _items = [];
-  
+
   List<CartItem> get items => List.unmodifiable(_items);
-  
-  int get itemCount => _items.length; // Conta número de itens únicos
-  
+
+  int get itemCount => _items.length;
+
   double get total => _items.fold(0.0, (sum, item) => sum + item.totalPrice);
-  
+
   bool get isEmpty => _items.isEmpty;
-  
+
   bool get isNotEmpty => _items.isNotEmpty;
 
   bool get isSingleBusiness {
@@ -67,23 +66,23 @@ class CartService extends ChangeNotifier {
 
   int? get businessId => _items.isNotEmpty ? _items.first.businessId : null;
   void addItem(CartItem newItem) {
-    final existingIndex = _items.indexWhere((item) => item.bagId == newItem.bagId);
-    
+    final existingIndex =
+        _items.indexWhere((item) => item.bagId == newItem.bagId);
+
     if (existingIndex >= 0) {
-      // Item já existe no carrinho, não adiciona novamente
       return;
     } else {
       if (_items.isNotEmpty && !isSingleBusiness) {
-        throw Exception('Não é possível adicionar itens de estabelecimentos diferentes');
+        throw Exception(
+            'Não é possível adicionar itens de estabelecimentos diferentes');
       }
-      
+
       _items.add(newItem);
     }
-    
+
     notifyListeners();
   }
 
-  // Remove método updateQuantity pois quantidade é sempre 1
   void removeItem(int bagId) {
     _items.removeWhere((item) => item.bagId == bagId);
     notifyListeners();
@@ -93,15 +92,18 @@ class CartService extends ChangeNotifier {
     _items.clear();
     notifyListeners();
   }
+
   List<OrderItem> toOrderItems() {
-    return _items.map((cartItem) => OrderItem(
-      bagId: cartItem.bagId,
-      quantity: 1, // Sempre 1
-      unitPrice: cartItem.price,
-      totalPrice: cartItem.price, // Sem multiplicação
-      bagName: cartItem.name,
-      bagDescription: cartItem.description,
-    )).toList();
+    return _items
+        .map((cartItem) => OrderItem(
+              bagId: cartItem.bagId,
+              quantity: 1,
+              unitPrice: cartItem.price,
+              totalPrice: cartItem.price,
+              bagName: cartItem.name,
+              bagDescription: cartItem.description,
+            ))
+        .toList();
   }
 
   Order createOrder(int userId) {
@@ -123,30 +125,42 @@ class CartService extends ChangeNotifier {
     );
   }
 
-  // Carrega carrinho ativo da API
   Future<void> loadActiveCart(int userId, String token) async {
     try {
-      final activeOrders = await OrderService.getActiveOrdersByUser(userId, token);
-      
-      // Se há pedido ativo, carrega os itens no carrinho
+      final activeOrders =
+          await OrderService.getActiveOrdersByUser(userId, token);
+
       if (activeOrders.isNotEmpty) {
-        final activeOrder = activeOrders.first; // Pega o primeiro pedido ativo
-        
-        clear(); // Limpa carrinho atual
-        
-        // Adiciona itens do pedido ativo ao carrinho
-        for (final orderItem in activeOrder.items) {
-          final cartItem = CartItem(
-            bagId: orderItem.bagId,
-            name: orderItem.bagName ?? 'Item',
-            price: orderItem.unitPrice,
-            businessId: activeOrder.businessId,
-            description: orderItem.bagDescription,
-          );
-          _items.add(cartItem);
+        final activeOrder = activeOrders.first;
+
+        bool needsUpdate = false;
+        if (_items.length != activeOrder.items.length) {
+          needsUpdate = true;
+        } else {
+          for (int i = 0; i < _items.length; i++) {
+            if (_items[i].bagId != activeOrder.items[i].bagId) {
+              needsUpdate = true;
+              break;
+            }
+          }
         }
-        
-        notifyListeners();
+
+        if (needsUpdate) {
+          clear();
+
+          for (final orderItem in activeOrder.items) {
+            final cartItem = CartItem(
+              bagId: orderItem.bagId,
+              name: orderItem.bagName ?? 'Item',
+              price: orderItem.unitPrice,
+              businessId: activeOrder.businessId,
+              description: orderItem.bagDescription,
+            );
+            _items.add(cartItem);
+          }
+
+          notifyListeners();
+        }
       }
     } catch (e) {
       print('Erro ao carregar carrinho ativo: $e');

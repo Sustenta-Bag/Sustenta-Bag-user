@@ -64,10 +64,8 @@ class MyApp extends StatelessWidget {
           case '/bag/deliveryOptions':
             return MaterialPageRoute(
               builder: (_) => DeliveryOptionScreen(
-                hasDelivery: args['hasDelivery'] ?? false,
-                userAddress: args['userAddress'] ?? '',
-                storeAddress: args['storeAddress'] ?? '',
                 subtotal: args['subtotal'] ?? 0.0,
+                orderId: args['orderId'],
               ),
             );
           case '/bag/reviewOrder':
