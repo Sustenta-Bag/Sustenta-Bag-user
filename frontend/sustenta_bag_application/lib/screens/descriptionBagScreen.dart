@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/models/nearby_bag.dart';
 import 'package:sustenta_bag_application/screens/StoreScreen.dart';
+import '../services/cart_service.dart';
 
 class DescriptionBagScreen extends StatefulWidget {
   final String id;
@@ -31,6 +32,42 @@ class DescriptionBagScreen extends StatefulWidget {
 }
 
 class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
+  final CartService _cartService = CartService();
+
+  void _addToCart() {
+    try {
+      final cartItem = CartItem(
+        bagId: int.parse(widget.id),
+        name: widget.title,
+        price: widget.price,
+        businessId: widget.business.id,
+        description: widget.description,
+      );
+
+      _cartService.addItem(cartItem);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${widget.title} adicionado ao carrinho!'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erro: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  void _buyNow() {
+    _addToCart();
+    Navigator.pushNamed(context, '/bag');
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,7 +94,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
               children: [
                 Positioned(
                   top:
-                      -25, // valor menos negativo para deixar a imagem mais baixa
+                      -25,
                   left: -MediaQuery.of(context).size.width * 0.35,
                   right: -MediaQuery.of(context).size.width * 0.35,
                   child: Image.asset(
@@ -186,9 +223,23 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                           ),
                         ),
                       ),
-                    ),
-                    Expanded(
+                    ),                    Expanded(
                       child: Container(),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Preço: R\$${widget.price.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),                        ],
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -202,10 +253,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 padding: EdgeInsets.symmetric(vertical: 12),
-                              ),
-                              onPressed: () {
-                                // Lógica para adicionar à sacola
-                              },
+                              ),                              onPressed: _addToCart,
                               child: const Text(
                                 'Adicionar à Sacola',
                                 style: TextStyle(
@@ -225,11 +273,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 padding: EdgeInsets.symmetric(vertical: 12),
-                              ),
-                              onPressed: () {
-                                // Lógica para compra
-                              },
-                              child: Text(
+                              ),                              onPressed: _buyNow,                              child: Text(
                                 'Comprar R\$${widget.price.toStringAsFixed(2)}',
                                 style: const TextStyle(
                                   fontSize: 16,
