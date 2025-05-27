@@ -103,6 +103,7 @@ class MyApp extends StatelessWidget {
                 storeDescription: args['storeDescription'],
                 rating: args['rating'],
                 workingHours: args['workingHours'],
+                business: args['business'] ?? {},
               ),
             );
 

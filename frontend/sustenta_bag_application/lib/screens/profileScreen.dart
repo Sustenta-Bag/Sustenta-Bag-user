@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/client.dart';
 import '../models/address.dart';
-import '../models/user.dart';
-import '../services/client_service.dart';
 import '../services/address_service.dart';
 import '../utils/auth_service.dart';
 import '../utils/database_helper.dart';
@@ -31,8 +28,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _isLoading = true;
     });
 
-    print("Carregando dados do usuário...");
-
     try {
       // Carregar token
       _token = await DatabaseHelper.instance.getToken();
@@ -53,7 +48,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         jsonData = userData;
       });
 
-      print(jsonData["entity"]["idAddress"]);
       final address = await AddressService.getAddress(
           jsonData["entity"]["idAddress"].toString(), _token!);
       if (mounted) {

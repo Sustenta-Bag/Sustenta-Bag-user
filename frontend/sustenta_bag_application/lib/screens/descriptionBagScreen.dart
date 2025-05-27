@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustenta_bag_application/models/nearby_bag.dart';
 import 'package:sustenta_bag_application/screens/StoreScreen.dart';
 
 class DescriptionBagScreen extends StatefulWidget {
@@ -10,6 +11,7 @@ class DescriptionBagScreen extends StatefulWidget {
   final String category;
   final String storeName;
   final String storeLogo;
+  final Business business;
 
   const DescriptionBagScreen({
     super.key,
@@ -21,6 +23,7 @@ class DescriptionBagScreen extends StatefulWidget {
     required this.category,
     required this.storeName,
     required this.storeLogo,
+    required this.business,
   });
 
   @override
@@ -123,7 +126,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              widget.storeName,
+                              widget.business.name,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -137,12 +140,13 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                   MaterialPageRoute(
                                     builder: (context) => StoreScreen(
                                       id: widget.id,
-                                      storeName: widget.storeName,
+                                      storeName: widget.business.name,
                                       storeLogo: widget.storeLogo,
                                       storeDescription:
                                           'Sed id faucibus lacus, vitae accumsan turpis. Donec varius neque nec mi consectetur volutpat.',
                                       rating: 4.8,
                                       workingHours: '18:00 às 23:30',
+                                      business: widget.business,
                                     ),
                                   ),
                                 );
