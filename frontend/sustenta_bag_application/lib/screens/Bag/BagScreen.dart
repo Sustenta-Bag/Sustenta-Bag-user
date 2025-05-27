@@ -60,7 +60,7 @@ class _BagScreenState extends State<BagScreen> {
                     ),
                     child: Row(
                       children: [
-                        Image.asset('assets/bag.png', width: 50, height: 50),
+                        Image.asset('assets/Bag.png', width: 50, height: 50),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -118,7 +118,7 @@ class _BagScreenState extends State<BagScreen> {
                 onPressed: () {
                   Navigator.pushNamed(
                     context,
-                    '/bag/deliveryOptions',
+                    '/Bag/deliveryOptions',
                     arguments: {
                       'hasDelivery': true,
                       'userAddress': 'Rua do Usuário, 123, Cidade, 12345678',

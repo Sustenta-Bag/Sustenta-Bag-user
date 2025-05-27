@@ -14,9 +14,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool showBanner = true;
 
   final List<Map<String, dynamic>> bags = [
-     {
+    {
       'id': '1',
-      'imagePath': 'assets/bag.png',
+      'imagePath': 'assets/Bag.png',
       'description': 'Doces irresistíveis para adoçar seu dia!',
       'title': 'Sweet Surprise',
       'price': 20.50,
@@ -24,7 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     },
     {
       'id': '2',
-      'imagePath': 'assets/bag.png',
+      'imagePath': 'assets/Bag.png',
       'description': 'Salgados crocantes e saborosos!',
       'title': 'Salty Secret',
       'price': 15.50,
@@ -32,7 +32,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     },
     {
       'id': '3',
-      'imagePath': 'assets/bag.png',
+      'imagePath': 'assets/Bag.png',
       'description': 'Uma mistura deliciosa de doces e salgados!',
       'title': 'Mixed Mystery',
       'price': 18.90,
@@ -40,7 +40,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     },
     {
       'id': '1',
-      'imagePath': 'assets/bag.png',
+      'imagePath': 'assets/Bag.png',
       'description': 'Doces irresistíveis para adoçar seu dia!',
       'title': 'Sweet Surprise',
       'price': 20.50,
@@ -48,7 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     },
     {
       'id': '2',
-      'imagePath': 'assets/bag.png',
+      'imagePath': 'assets/Bag.png',
       'description': 'Salgados crocantes e saborosos!',
       'title': 'Salty Secret',
       'price': 15.50,
@@ -56,7 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     },
     {
       'id': '3',
-      'imagePath': 'assets/bag.png',
+      'imagePath': 'assets/Bag.png',
       'description': 'Uma mistura deliciosa de doces e salgados!',
       'title': 'Mixed Mystery',
       'price': 18.90,
@@ -64,7 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     },
     {
       'id': '1',
-      'imagePath': 'assets/bag.png',
+      'imagePath': 'assets/Bag.png',
       'description': 'Doces irresistíveis para adoçar seu dia!',
       'title': 'Sweet Surprise',
       'price': 20.50,
@@ -72,7 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     },
     {
       'id': '2',
-      'imagePath': 'assets/bag.png',
+      'imagePath': 'assets/Bag.png',
       'description': 'Salgados crocantes e saborosos!',
       'title': 'Salty Secret',
       'price': 15.50,
@@ -80,7 +80,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     },
     {
       'id': '3',
-      'imagePath': 'assets/bag.png',
+      'imagePath': 'assets/Bag.png',
       'description': 'Uma mistura deliciosa de doces e salgados!',
       'title': 'Mixed Mystery',
       'price': 18.90,
@@ -112,10 +112,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   duration: Duration(seconds: 1),
                 ),
               );
-              
+
               // Send FCM token to server
-              final success = await FirebaseMessagingService.sendFCMTokenToServer();
-              
+              final success =
+                  await FirebaseMessagingService.sendFCMTokenToServer();
+
               // Show result to user
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -127,7 +128,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Falha ao configurar notificações. Tente novamente.'),
+                    content: Text(
+                        'Falha ao configurar notificações. Tente novamente.'),
                     backgroundColor: Colors.red,
                   ),
                 );

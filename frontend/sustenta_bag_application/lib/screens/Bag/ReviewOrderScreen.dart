@@ -50,7 +50,7 @@ class ReviewOrderScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/bag/payment');
+                  Navigator.pushNamed(context, '/Bag/payment');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,

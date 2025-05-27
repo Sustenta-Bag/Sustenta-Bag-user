@@ -5,6 +5,7 @@ import 'package:sustenta_bag_application/screens/ReviewScreen.dart';
 import 'package:sustenta_bag_application/screens/ShowReviewScreen.dart';
 import 'package:sustenta_bag_application/screens/StoreScreen.dart';
 import 'package:sustenta_bag_application/firebase_options.dart';
+import 'package:sustenta_bag_application/screens/UserDataScreen.dart';
 import 'package:sustenta_bag_application/utils/firebase_messaging_service.dart';
 import 'screens/IntroScreen.dart';
 import 'screens/LoginScreen.dart';
@@ -58,13 +59,14 @@ class MyApp extends StatelessWidget {
         '/register1': (_) => RegisterStep1(),
         '/register2': (_) => RegisterStep2(),
         '/register3': (_) => RegisterStep3(),
-        '/bag/payment': (_) => const PaymentScreen(),
+        '/Bag/payment': (_) => const PaymentScreen(),
         '/favorites': (_) => FavoritesScreen(),
+        '/user_data': (_) => const UserDataScreen()
       },
       onGenerateRoute: (settings) {
         final args = (settings.arguments ?? {}) as Map<String, dynamic>;
         switch (settings.name) {
-          case '/bag/deliveryOptions':
+          case '/Bag/deliveryOptions':
             return MaterialPageRoute(
               builder: (_) => DeliveryOptionScreen(
                 hasDelivery: args['hasDelivery'] ?? false,
@@ -73,7 +75,7 @@ class MyApp extends StatelessWidget {
                 subtotal: args['subtotal'] ?? 0.0,
               ),
             );
-          case '/bag/reviewOrder':
+          case '/Bag/reviewOrder':
             return MaterialPageRoute(
               builder: (_) => ReviewOrderScreen(
                 subtotal: args['subtotal'] ?? 0.0,

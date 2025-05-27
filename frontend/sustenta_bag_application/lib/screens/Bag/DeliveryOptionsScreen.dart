@@ -144,7 +144,7 @@ class DeliveryOptionScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.pushNamed(
                     context,
-                    '/bag/reviewOrder',
+                    '/Bag/reviewOrder',
                     arguments: {
                       'subtotal': subtotal,
                       'deliveryFee': hasDelivery ? 8.0 : 0.0,
