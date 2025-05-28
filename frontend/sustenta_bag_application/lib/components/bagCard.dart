@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sustenta_bag_application/models/nearby_bag.dart';
 import '../screens/descriptionBagScreen.dart';
 
 class BagCard extends StatelessWidget {
@@ -8,6 +9,7 @@ class BagCard extends StatelessWidget {
   final String description;
   final double price;
   final String category;
+  final Business business;
 
   const BagCard({
     super.key,
@@ -17,6 +19,7 @@ class BagCard extends StatelessWidget {
     required this.description,
     required this.price,
     required this.category,
+    required this.business,
   });
 
   @override
@@ -35,6 +38,7 @@ class BagCard extends StatelessWidget {
               category: category,
               storeLogo: 'assets/mcd.png',
               storeName: 'McDonald\'s',
+              business: business,
             ),
           ),
         );

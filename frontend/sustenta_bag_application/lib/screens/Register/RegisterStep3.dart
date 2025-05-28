@@ -276,10 +276,8 @@ class _RegisterStep3State extends State<RegisterStep3> {
           items: EstadosBrasil.getDropdownItems(),
           onChanged: (String? newValue) {
             setState(() {
-              print("Estado selecionado: $newValue");
               _estadoSelecionado = newValue;
               userData['estado'] = newValue;
-              print("Estado selecionado atualizado: $_estadoSelecionado");
             });
           },
           validator: (value) {

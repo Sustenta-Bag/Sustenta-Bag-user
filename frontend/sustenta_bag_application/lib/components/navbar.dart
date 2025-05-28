@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/cart_service.dart';
 
-class BottomNavBar extends StatelessWidget {
+class BottomNavBar extends StatefulWidget {
   final Function(int) onItemSelected;
   final int currentIndex;
 
@@ -9,6 +10,29 @@ class BottomNavBar extends StatelessWidget {
     required this.onItemSelected,
     required this.currentIndex,
   });
+
+  @override
+  State<BottomNavBar> createState() => _BottomNavBarState();
+}
+
+class _BottomNavBarState extends State<BottomNavBar> {
+  final CartService _cartService = CartService();
+
+  @override
+  void initState() {
+    super.initState();
+    _cartService.addListener(_onCartChanged);
+  }
+
+  @override
+  void dispose() {
+    _cartService.removeListener(_onCartChanged);
+    super.dispose();
+  }
+
+  void _onCartChanged() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +62,10 @@ class BottomNavBar extends StatelessWidget {
   }
 
   Widget _buildNavItem(IconData icon, int index) {
-    final isSelected = index == currentIndex;
+    final isSelected = index == widget.currentIndex;
 
     return GestureDetector(
-      onTap: () => onItemSelected(index),
+      onTap: () => widget.onItemSelected(index),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -50,7 +74,7 @@ class BottomNavBar extends StatelessWidget {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3), 
+                color: Colors.white.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -59,6 +83,31 @@ class BottomNavBar extends StatelessWidget {
             color: Colors.white,
             size: isSelected ? 36 : 30,
           ),
+          if (index == 2 && _cartService.itemCount > 0)
+            Positioned(
+              right: 0,
+              top: 0,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 20,
+                  minHeight: 20,
+                ),
+                child: Text(
+                  '${_cartService.itemCount}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
         ],
       ),
     );

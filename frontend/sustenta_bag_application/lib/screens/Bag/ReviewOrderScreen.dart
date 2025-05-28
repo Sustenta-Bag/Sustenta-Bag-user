@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../services/order_service.dart';
+import '../../services/cart_service.dart';
+import '../../utils/database_helper.dart';
 
-class ReviewOrderScreen extends StatelessWidget {
+class ReviewOrderScreen extends StatefulWidget {
   final double subtotal;
   final double deliveryFee;
 
@@ -10,7 +13,71 @@ class ReviewOrderScreen extends StatelessWidget {
     required this.deliveryFee,
   });
 
-  double get total => subtotal + deliveryFee;
+  @override
+  State<ReviewOrderScreen> createState() => _ReviewOrderScreenState();
+}
+
+class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
+  final CartService _cartService = CartService();
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  double get total => widget.subtotal + widget.deliveryFee;
+
+  Future<void> _createOrderAndProceedToPayment() async {
+    if (_cartService.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Carrinho vazio')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final token = await DatabaseHelper.instance.getToken();
+      if (token == null) {
+        throw Exception('Token de autenticação não encontrado');
+      }
+
+      final userData = await DatabaseHelper.instance.getUser();
+      if (userData == null) {
+        throw Exception('Dados do usuário não encontrados');
+      }
+
+      final order = _cartService.createOrder(userData['id']);
+      final createdOrder = await OrderService.createOrder(order, token);
+      
+      if (createdOrder != null) {
+        if (mounted) {
+          // Limpa o carrinho após criar a ordem com sucesso
+          _cartService.clear();
+          
+          // Navega para a tela de pagamento
+          Navigator.pushNamed(context, '/bag/payment');
+        }
+      } else {
+        throw Exception('Falha ao criar pedido');
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Erro ao criar pedido: ${e.toString()}';
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_errorMessage!)),
+        );
+      }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +105,9 @@ class ReviewOrderScreen extends StatelessWidget {
               'Resumo de valores',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const SizedBox(height: 24),
-            _buildRow('Subtotal', subtotal),
+            const SizedBox(height: 24),            _buildRow('Subtotal', widget.subtotal),
             const SizedBox(height: 8),
-            _buildRow('Taxa de entrega', deliveryFee),
+            _buildRow('Taxa de entrega', widget.deliveryFee),
             const SizedBox(height: 24),
             const Divider(),
             _buildRow('Total', total, isBold: true),
@@ -49,9 +115,7 @@ class ReviewOrderScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/Bag/payment');
-                },
+                onPressed: _isLoading ? null : _createOrderAndProceedToPayment,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -59,10 +123,19 @@ class ReviewOrderScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Prosseguir para pagamento',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Prosseguir para pagamento',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
               ),
             ),
           ],

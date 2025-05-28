@@ -17,32 +17,31 @@ import 'screens/Register/RegisterStep3.dart';
 import 'screens/bag/DeliveryOptionsScreen.dart';
 import 'screens/bag/ReviewOrderScreen.dart';
 import 'screens/bag/PaymentScreen.dart';
+import 'screens/bag/PendingOrderDetailsScreen.dart';
 import 'screens/FavoritesScreen.dart';
+import 'models/order.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
   try {
-    // Initialize Firebase with the correct options
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    // Initialize Firebase Messaging
     await FirebaseMessagingService.initialize();
 
-    // Print the FCM token for testing purposes
     final fcmToken = FirebaseMessagingService.token;
     print('FCM Token for Testing: $fcmToken');
   } catch (e) {
     print('Error initializing Firebase: $e');
-    // Continue even if Firebase initialization fails
-    // This ensures the app can still run without Firebase
   }
 
   runApp(const MyApp());
 }
+
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -52,6 +51,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SustentaBag',
+      navigatorObservers: [routeObserver],
       initialRoute: '/',
       routes: {
         '/': (_) => const IntroScreen(),
@@ -73,9 +73,6 @@ class MyApp extends StatelessWidget {
           case '/Bag/deliveryOptions':
             return MaterialPageRoute(
               builder: (_) => DeliveryOptionScreen(
-                hasDelivery: args['hasDelivery'] ?? false,
-                userAddress: args['userAddress'] ?? '',
-                storeAddress: args['storeAddress'] ?? '',
                 subtotal: args['subtotal'] ?? 0.0,
               ),
             );
@@ -109,6 +106,13 @@ class MyApp extends StatelessWidget {
                 storeDescription: args['storeDescription'],
                 rating: args['rating'],
                 workingHours: args['workingHours'],
+                business: args['business'] ?? {},
+              ),
+            );
+          case '/bag/pendingOrderDetails':
+            return MaterialPageRoute(
+              builder: (_) => PendingOrderDetailsScreen(
+                order: args['order'] as Order,
               ),
             );
 
