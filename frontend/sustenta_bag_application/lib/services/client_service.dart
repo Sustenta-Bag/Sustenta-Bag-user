@@ -24,24 +24,42 @@ class ClientService {
     }
   }
 
-  static Future<Client?> updateClient(String id, Map<String, dynamic> data, String token) async {
+  static Future<Client?> updateClient(
+      String id, Map<String, dynamic> data, String token) async {
+    final url = Uri.parse('$baseUrl/clients/$id');
+    print('--- ATUALIZANDO CLIENTE ---');
+    print('URL de Requisição: $url');
+    print('Token de Autorização: Bearer $token');
+    print('Dados Enviados (Payload): ${jsonEncode(data)}');
+
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/clients/$id'),
+        url,
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json; charset=UTF-8'
         },
         body: jsonEncode(data),
       );
 
+      print('Status Code da Resposta: ${response.statusCode}');
+      print('Corpo da Resposta: ${response.body}');
+
       if (response.statusCode == 200) {
-        final updatedData = jsonDecode(response.body);
-        return Client.fromJson(updatedData);
+        try {
+          final updatedData = jsonDecode(response.body);
+          return Client.fromJson(updatedData);
+        } catch (e) {
+          print('Erro ao decodificar JSON da resposta do cliente: $e');
+          return null;
+        }
+      } else {
+        print(
+            'Falha ao atualizar cliente. Status: ${response.statusCode}, Motivo: ${response.reasonPhrase}');
+        return null;
       }
-      return null;
     } catch (e) {
-      print('Erro ao atualizar cliente: $e');
+      print('Exceção ao tentar atualizar cliente: $e');
       return null;
     }
   }
@@ -77,4 +95,4 @@ class ClientService {
       return false;
     }
   }
-} 
+}

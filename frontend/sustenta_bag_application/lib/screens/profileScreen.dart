@@ -71,112 +71,296 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _logout() async {
-    try {
-      await AuthService.logout();
-      if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/login');
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao fazer logout: ${e.toString()}')),
-      );
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text('Confirmar Saída'),
+          content: const Text('Tem certeza que deseja sair do aplicativo?'),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.black),
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.black),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Sair'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldLogout == true) {
+      try {
+        await AuthService.logout();
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, '/login');
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao fazer logout: ${e.toString()}')),
+        );
+      }
     }
+  }
+
+  void _showFavorites() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Funcionalidade de Favoritos em desenvolvimento')),
+    );
+  }
+
+  void _goToUserData() {
+    Navigator.pushNamed(context, '/user_data');
+  }
+
+  void _editProfile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+          content: Text('Funcionalidade de Edição em desenvolvimento')),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Meu Perfil'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Color(0xFFE8514C),
+                      child: Text(
+                        (jsonData["entity"]["name"] ?? 'U')[0].toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      jsonData["entity"]["name"] ?? 'Usuário',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      jsonData["entity"]["email"] ?? '',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 30),
+              _buildMenuButton(
+                icon: Icons.favorite,
+                title: 'Favoritos',
+                subtitle: 'Seus itens favoritos',
+                onTap: _showFavorites,
+                color: Colors.amber,
+              ),
+              const SizedBox(height: 16),
+              _buildMenuButton(
+                icon: Icons.person,
+                title: 'Meus Dados',
+                subtitle: 'Visualizar e editar informações pessoais',
+                onTap: _goToUserData,
+                color: Colors.amber,
+              ),
+              const SizedBox(height: 16),
+              _buildMenuButton(
+                icon: Icons.exit_to_app,
+                title: 'Sair do Aplicativo',
+                subtitle: 'Fazer logout da conta',
+                onTap: _logout,
+                color: Colors.amber,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuButton({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSection(
-              'Dados Pessoais',
-              [
-                _buildInfoRow('Nome', jsonData["entity"]["name"] ?? 'N/A'),
-                _buildInfoRow('CPF', jsonData["entity"]["cpf"] ?? 'N/A'),
-                _buildInfoRow('Telefone', jsonData["entity"]["phone"] ?? 'N/A'),
-                _buildInfoRow('Email', jsonData["entity"]["email"] ?? 'N/A'),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: color,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.grey[400],
+                  size: 20,
+                ),
               ],
             ),
-            const SizedBox(height: 20),
-            _buildSection(
-              'Endereço',
-              [
-                _buildInfoRow('CEP', _address?.zipCode ?? 'N/A'),
-                _buildInfoRow('Rua', _address?.street ?? 'N/A'),
-                _buildInfoRow('Número', _address?.number ?? 'N/A'),
-                _buildInfoRow('Complemento', _address?.complement ?? 'N/A'),
-                _buildInfoRow('Bairro', 'N/A'),
-                _buildInfoRow('Cidade', _address?.city ?? 'N/A'),
-                _buildInfoRow('Estado', _address?.state ?? 'N/A'),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implementar edição de perfil
-                },
-                child: const Text('Editar Perfil'),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildSection(String title, List<Widget> children) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            ...children,
-          ],
+Widget _buildSection(String title, List<Widget> children) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(20.0),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 10,
+          offset: const Offset(0, 3),
         ),
-      ),
-    );
-  }
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...children,
+      ],
+    ),
+  );
+}
 
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
+Widget _buildInfoRow(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
             ),
           ),
-          Text(value),
-        ],
-      ),
-    );
-  }
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Colors.black87,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }

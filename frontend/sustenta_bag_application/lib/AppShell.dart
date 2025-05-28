@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'components/navbar.dart';
 import 'screens/homeScreen.dart';
-import 'screens/history/HistoryScreen.dart';
+import 'screens/HistoryScreen.dart';
 import 'screens/bag/BagScreen.dart';
 import 'screens/ProfileScreen.dart';
 import 'services/cart_service.dart';

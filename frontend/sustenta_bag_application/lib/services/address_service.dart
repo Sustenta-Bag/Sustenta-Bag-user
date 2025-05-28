@@ -42,7 +42,8 @@ class AddressService {
     }
   }
 
-  static Future<Address?> createAddress(Map<String, dynamic> data, String token) async {
+  static Future<Address?> createAddress(
+      Map<String, dynamic> data, String token) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/addresses'),
@@ -64,24 +65,42 @@ class AddressService {
     }
   }
 
-  static Future<Address?> updateAddress(String id, Map<String, dynamic> data, String token) async {
+  static Future<Address?> updateAddress(
+      String id, Map<String, dynamic> data, String token) async {
+    final url = Uri.parse('$baseUrl/addresses/$id');
+    print('--- ATUALIZANDO ENDEREÇO ---');
+    print('URL de Requisição: $url');
+    print('Token de Autorização: Bearer $token');
+    print('Dados Enviados (Payload): ${jsonEncode(data)}');
+
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/addresses/$id'),
+        url,
         headers: {
           'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json; charset=UTF-8'
         },
         body: jsonEncode(data),
       );
 
+      print('Status Code da Resposta: ${response.statusCode}');
+      print('Corpo da Resposta: ${response.body}');
+
       if (response.statusCode == 200) {
-        final updatedData = jsonDecode(response.body);
-        return Address.fromJson(updatedData);
+        try {
+          final updatedData = jsonDecode(response.body);
+          return Address.fromJson(updatedData);
+        } catch (e) {
+          print('Erro ao decodificar JSON da resposta do endereço: $e');
+          return null;
+        }
+      } else {
+        print(
+            'Falha ao atualizar endereço. Status: ${response.statusCode}, Motivo: ${response.reasonPhrase}');
+        return null;
       }
-      return null;
     } catch (e) {
-      print('Erro ao atualizar endereço: $e');
+      print('Exceção ao tentar atualizar endereço: $e');
       return null;
     }
   }
@@ -99,4 +118,4 @@ class AddressService {
       return false;
     }
   }
-} 
+}
