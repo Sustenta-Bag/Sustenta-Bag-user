@@ -162,20 +162,25 @@ extension OrderStatusExtension on OrderStatus {
         return 'cancelled';
     }
   }
-
   static OrderStatus fromString(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
+      case 'pendente':
         return OrderStatus.pending;
       case 'confirmed':
+      case 'confirmado':
         return OrderStatus.confirmed;
       case 'preparing':
+      case 'preparando':
         return OrderStatus.preparing;
       case 'ready':
+      case 'pronto':
         return OrderStatus.ready;
       case 'delivered':
+      case 'entregue':
         return OrderStatus.delivered;
       case 'cancelled':
+      case 'cancelado':
         return OrderStatus.cancelled;
       default:
         return OrderStatus.pending;

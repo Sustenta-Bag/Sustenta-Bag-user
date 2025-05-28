@@ -1,21 +1,273 @@
 import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/screens/ReviewScreen.dart';
+import '../../services/order_service.dart';
+import '../../services/business_service.dart';
+import '../../utils/database_helper.dart';
+import '../../models/order.dart';
+import '../../models/business.dart';
 
-class HistoryScreen extends StatelessWidget {
+class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
 
-  final List<Map<String, String>> orderHistory = const [
-    {
-      'date': 'Dom, 02 fevereiro 2025',
-      'title': 'Aurelius Gastro Bar',
-      'subtitle': '1 Sacola Salgada',
-    },
-    {
-      'date': 'Qua, 20 novembro 2024',
-      'title': 'The Best Açaí',
-      'subtitle': '1 Sacola Doce',
-    },
-  ];
+  @override
+  State<HistoryScreen> createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends State<HistoryScreen> {
+  bool isLoading = true;
+  bool isLoadingMore = false;
+  String? errorMessage;
+  List<Order> orderHistory = [];
+  Order? activeOrder;
+  Map<int, BusinessData> businessCache = {};
+  bool hasMore = true;
+  int currentOffset = 0;
+  final int pageSize = 10;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrderHistory();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent * 0.8) {
+      if (!isLoadingMore && hasMore) {
+        _loadMoreHistory();
+      }
+    }
+  }
+
+  Future<void> _loadOrderHistory() async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final token = await DatabaseHelper.instance.getToken();
+      if (token == null) {
+        throw Exception('Token de autenticação não encontrado');
+      }
+
+      final userData = await DatabaseHelper.instance.getUser();
+      if (userData == null) {
+        throw Exception('Dados do usuário não encontrados');
+      }
+
+      final activeOrders =
+          await OrderService.getActiveOrdersByUser(userData['id'], token);
+      final historyResult = await OrderService.getOrderHistoryByUser(
+        userData['id'],
+        token,
+        limit: pageSize,
+        offset: 0,
+      );
+
+      if (historyResult != null) {
+        final orders = historyResult['orders'] as List<Order>;
+        final totalHasMore = historyResult['hasMore'] as bool;
+
+        for (final order in orders) {
+          if (!businessCache.containsKey(order.businessId)) {
+            final business =
+                await BusinessService.getBusiness(order.businessId, token);
+            if (business != null) {
+              businessCache[order.businessId] = business;
+            }
+          }
+        }
+        setState(() {
+          activeOrder = activeOrders.isNotEmpty ? activeOrders.first : null;
+          orderHistory = orders
+              .where((order) =>
+                  order.status != 'confirmado' &&
+                  order.status != 'preparando' &&
+                  order.status != 'pronto')
+              .toList();
+          hasMore = totalHasMore;
+          currentOffset = pageSize;
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Erro ao carregar histórico');
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMoreHistory() async {
+    if (isLoadingMore || !hasMore) return;
+
+    setState(() {
+      isLoadingMore = true;
+    });
+
+    try {
+      final token = await DatabaseHelper.instance.getToken();
+      if (token == null) return;
+
+      final userData = await DatabaseHelper.instance.getUser();
+      if (userData == null) return;
+
+      final historyResult = await OrderService.getOrderHistoryByUser(
+        userData['id'],
+        token,
+        limit: pageSize,
+        offset: currentOffset + pageSize,
+      );
+
+      if (historyResult != null) {
+        final newOrders = historyResult['orders'] as List<Order>;
+        final newHasMore = historyResult['hasMore'] as bool;
+
+        for (final order in newOrders) {
+          if (!businessCache.containsKey(order.businessId)) {
+            final business =
+                await BusinessService.getBusiness(order.businessId, token);
+            if (business != null) {
+              businessCache[order.businessId] = business;
+            }
+          }
+        }
+        setState(() {
+          final filteredOrders = newOrders
+              .where((order) =>
+                  order.status != 'confirmado' &&
+                  order.status != 'preparando' &&
+                  order.status != 'pronto')
+              .toList();
+
+          orderHistory.addAll(filteredOrders);
+          hasMore = newHasMore;
+          currentOffset += pageSize;
+          isLoadingMore = false;
+        });
+      } else {
+        setState(() {
+          isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoadingMore = false;
+      });
+    }
+  }
+
+  String _formatDate(String isoDate) {
+    try {
+      final date = DateTime.parse(isoDate);
+      final weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      final months = [
+        'janeiro',
+        'fevereiro',
+        'março',
+        'abril',
+        'maio',
+        'junho',
+        'julho',
+        'agosto',
+        'setembro',
+        'outubro',
+        'novembro',
+        'dezembro'
+      ];
+
+      return '${weekdays[date.weekday % 7]}, ${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
+    } catch (e) {
+      return isoDate;
+    }
+  }
+
+  String _getOrderDescription(Order order) {
+    if (order.items.isEmpty) return 'Pedido sem itens';
+
+    final itemCount = order.items.length;
+    if (itemCount == 1) {
+      return order.items.first.bagName ?? '1 Sacola';
+    } else {
+      return '$itemCount Sacolas';
+    }
+  }
+  String _getStatusDisplayName(String status) {
+    final orderStatus = OrderStatusExtension.fromString(status);
+    return orderStatus.displayName;
+  }
+
+  Future<void> _cancelOrder(Order order) async {
+    final shouldCancel = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Cancelar Pedido'),
+          content: const Text('Você tem certeza que deseja cancelar este pedido?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Não'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Sim, cancelar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldCancel == true) {
+      try {
+        final token = await DatabaseHelper.instance.getToken();
+        if (token == null) {
+          throw Exception('Token de autenticação não encontrado');
+        }
+
+        final success = await OrderService.cancelOrder(order.id!, token);
+        
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Pedido cancelado com sucesso'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          _loadOrderHistory();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erro ao cancelar pedido'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,61 +279,176 @@ class HistoryScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
       ),
       backgroundColor: const Color(0xFFFFFFFF),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF2F2F2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Aguardando Pagamento',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline,
+                          size: 64, color: Colors.red[600]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Erro ao carregar histórico',
+                        style: TextStyle(fontSize: 18, color: Colors.red[700]),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        errorMessage!,
+                        style: const TextStyle(color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadOrderHistory,
+                        child: const Text('Tentar novamente'),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 4),
-                  Text('Sacola Mista | Kampai Sushi'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            const Text(
-              'Histórico',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 24),
-            ...orderHistory.map((order) => Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: _buildHistoryItem(
-                    context,
-                    date: order['date']!,
-                    title: order['title']!,
-                    subtitle: order['subtitle']!,
+                )
+              : RefreshIndicator(
+                  onRefresh: _loadOrderHistory,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    controller: _scrollController,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (activeOrder != null) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF2F2F2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _getStatusDisplayName(activeOrder!.status),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(_getOrderDescription(activeOrder!) +
+                                    ' | ${businessCache[activeOrder!.businessId]?.appName ?? 'Estabelecimento'}'),                                if (activeOrder!.status == 'pendente') ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/bag/reviewOrder',
+                                              arguments: {
+                                                'subtotal': activeOrder!.totalAmount,
+                                                'deliveryFee': 0.0,
+                                              },
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 8,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Pagar Agora',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () => _cancelOrder(activeOrder!),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.grey[600],
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 8,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Cancelar',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+                        const Text(
+                          'Histórico',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 24),
+                        if (orderHistory.isEmpty)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(32.0),
+                              child: Text(
+                                'Nenhum pedido no histórico',
+                                style:
+                                    TextStyle(color: Colors.grey, fontSize: 16),
+                              ),
+                            ),
+                          )
+                        else
+                          ...orderHistory.map((order) => Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: _buildHistoryItem(
+                                  context,
+                                  order: order,
+                                ),
+                              )),
+                        if (isLoadingMore)
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                )),
-          ],
-        ),
-      ),
+                ),
     );
   }
 
-  Widget _buildHistoryItem(
-    BuildContext context, {
-    required String date,
-    required String title,
-    required String subtitle,
-  }) {
+  Widget _buildHistoryItem(BuildContext context, {required Order order}) {
+    final business = businessCache[order.businessId];
+    final businessName = business?.appName ?? 'Estabelecimento';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          date,
+          _formatDate(order.createdAt),
           style: const TextStyle(color: Colors.grey, fontSize: 14),
         ),
         const SizedBox(height: 8),
@@ -99,7 +466,7 @@ class HistoryScreen extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      title,
+                      businessName,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -108,32 +475,111 @@ class HistoryScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Divider(),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ReviewScreen(estabelecimento: title),
-                    ),
-                  );
-                },
-                child: const Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Fazer avaliação',
-                    style: TextStyle(
-                      decoration: TextDecoration.underline,
-                      color: Colors.black,
+              if (order.status == OrderStatus.delivered.value) ...[
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ReviewScreen(
+                          estabelecimento: businessName,
+                          estabelecimentoId: order.businessId.toString(),
+                        ),
+                      ),
+                    );
+                  },
+                  child: const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Fazer avaliação',
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 4),
+              ],              if (order.status == 'pendente') ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/bag/reviewOrder',
+                            arguments: {
+                              'subtotal': order.totalAmount,
+                              'deliveryFee': 0.0,
+                            },
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                        ),
+                        child: const Text(
+                          'Pagar Agora',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => _cancelOrder(order),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[600],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                        ),
+                        child: const Text(
+                          'Cancelar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+              ],
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(_getOrderDescription(order)),
               ),
               const SizedBox(height: 4),
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text(subtitle),
-              )
+                child: Text(
+                  'Status: ${_getStatusDisplayName(order.status)}',
+                  style: TextStyle(
+                    color: order.status == OrderStatus.delivered.value
+                        ? Colors.green
+                        : Colors.red,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
