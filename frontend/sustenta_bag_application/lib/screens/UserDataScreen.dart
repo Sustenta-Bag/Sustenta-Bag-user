@@ -71,31 +71,70 @@ class _UserDataScreenState extends State<UserDataScreen> {
   }
 
   void _editPersonalData() {
+    if (jsonData["entity"] == null ||
+        jsonData["entity"]["id"] == null ||
+        _token == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content:
+                  Text('Não foi possível obter dados do usuário para edição.')),
+        );
+      }
+      return;
+    }
+
     Navigator.pushNamed(
       context,
       '/edit_step1',
       arguments: {
+        'id': jsonData["entity"]["id"].toString(),
+        'token': _token,
         'nome': jsonData["entity"]["name"],
         'cpf': jsonData["entity"]["cpf"],
         'email': jsonData["entity"]["email"],
         'telefone': jsonData["entity"]["phone"],
       },
-    );
+    ).then((result) {
+      if (result == true && mounted) {
+        _loadUserData();
+      }
+    });
   }
 
   void _editAddressData() {
+    if (jsonData["entity"] == null ||
+        jsonData["entity"]["idAddress"] == null ||
+        _token == null ||
+        _address == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Não foi possível obter dados de endereço para edição.')),
+        );
+      }
+      return;
+    }
+
     Navigator.pushNamed(
       context,
       '/edit_step2',
       arguments: {
+        'idAddress': jsonData["entity"]["idAddress"].toString(),
         'cep': _address?.zipCode,
         'rua': _address?.street,
         'numero': _address?.number,
         'complemento': _address?.complement,
         'cidade': _address?.city,
         'estado': _address?.state,
+        'token': _token,
       },
-    );
+    ).then((result) {
+      if (result == true && mounted) {
+        _loadUserData();
+      }
+    });
   }
 
   @override
@@ -282,7 +321,6 @@ class _UserDataScreenState extends State<UserDataScreen> {
               ],
             ),
           ),
-          // Conteúdo da seção
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(

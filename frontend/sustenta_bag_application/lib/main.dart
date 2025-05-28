@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sustenta_bag_application/AppShell.dart' show AppShell;
+import 'package:sustenta_bag_application/screens/Edit/EditStep1.dart';
+import 'package:sustenta_bag_application/screens/Edit/EditStep2.dart';
 import 'package:sustenta_bag_application/screens/ReviewScreen.dart';
 import 'package:sustenta_bag_application/screens/ShowReviewScreen.dart';
 import 'package:sustenta_bag_application/screens/StoreScreen.dart';
@@ -33,7 +35,6 @@ void main() async {
     // Print the FCM token for testing purposes
     final fcmToken = FirebaseMessagingService.token;
     print('FCM Token for Testing: $fcmToken');
-
   } catch (e) {
     print('Error initializing Firebase: $e');
     // Continue even if Firebase initialization fails
@@ -45,6 +46,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -61,7 +63,9 @@ class MyApp extends StatelessWidget {
         '/register3': (_) => RegisterStep3(),
         '/Bag/payment': (_) => const PaymentScreen(),
         '/favorites': (_) => FavoritesScreen(),
-        '/user_data': (_) => const UserDataScreen()
+        '/user_data': (_) => const UserDataScreen(),
+        "/edit_step1": (ctx) => const EditUserStep1(),
+        '/edit_step2': (ctx) => const EditUserStep2(),
       },
       onGenerateRoute: (settings) {
         final args = (settings.arguments ?? {}) as Map<String, dynamic>;
