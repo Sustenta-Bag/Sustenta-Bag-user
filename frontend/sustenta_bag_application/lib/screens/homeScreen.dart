@@ -110,7 +110,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Falha ao configurar notificações. Tente novamente.'),
+                    content: Text(
+                        'Falha ao configurar notificações. Tente novamente.'),
                     backgroundColor: Colors.red,
                   ),
                 );

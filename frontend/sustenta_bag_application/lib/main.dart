@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:sustenta_bag_application/AppShell.dart' show AppShell;
+import 'package:sustenta_bag_application/screens/Edit/EditStep1.dart';
+import 'package:sustenta_bag_application/screens/Edit/EditStep2.dart';
 import 'package:sustenta_bag_application/screens/ReviewScreen.dart';
 import 'package:sustenta_bag_application/screens/ShowReviewScreen.dart';
 import 'package:sustenta_bag_application/screens/StoreScreen.dart';
 import 'package:sustenta_bag_application/firebase_options.dart';
+import 'package:sustenta_bag_application/screens/UserDataScreen.dart';
 import 'package:sustenta_bag_application/utils/firebase_messaging_service.dart';
 import 'screens/IntroScreen.dart';
 import 'screens/LoginScreen.dart';
@@ -42,6 +45,7 @@ final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -57,19 +61,22 @@ class MyApp extends StatelessWidget {
         '/register1': (_) => RegisterStep1(),
         '/register2': (_) => RegisterStep2(),
         '/register3': (_) => RegisterStep3(),
-        '/bag/payment': (_) => const PaymentScreen(),
+        '/Bag/payment': (_) => const PaymentScreen(),
         '/favorites': (_) => FavoritesScreen(),
+        '/user_data': (_) => const UserDataScreen(),
+        "/edit_step1": (ctx) => const EditUserStep1(),
+        '/edit_step2': (ctx) => const EditUserStep2(),
       },
       onGenerateRoute: (settings) {
         final args = (settings.arguments ?? {}) as Map<String, dynamic>;
         switch (settings.name) {
-          case '/bag/deliveryOptions':
+          case '/Bag/deliveryOptions':
             return MaterialPageRoute(
               builder: (_) => DeliveryOptionScreen(
                 subtotal: args['subtotal'] ?? 0.0,
               ),
             );
-          case '/bag/reviewOrder':
+          case '/Bag/reviewOrder':
             return MaterialPageRoute(
               builder: (_) => ReviewOrderScreen(
                 subtotal: args['subtotal'] ?? 0.0,
