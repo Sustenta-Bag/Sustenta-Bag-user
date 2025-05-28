@@ -50,7 +50,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,        children: [
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
           _buildNavItem(Icons.home, 0),
           _buildNavItem(Icons.list, 1),
           _buildNavItem(Icons.shopping_bag, 2),
@@ -59,6 +60,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       ),
     );
   }
+
   Widget _buildNavItem(IconData icon, int index) {
     final isSelected = index == widget.currentIndex;
 
@@ -72,7 +74,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3), 
+                color: Colors.white.withOpacity(0.3),
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
