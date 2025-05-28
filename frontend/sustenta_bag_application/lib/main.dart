@@ -14,7 +14,9 @@ import 'screens/Register/RegisterStep3.dart';
 import 'screens/bag/DeliveryOptionsScreen.dart';
 import 'screens/bag/ReviewOrderScreen.dart';
 import 'screens/bag/PaymentScreen.dart';
+import 'screens/bag/PendingOrderDetailsScreen.dart';
 import 'screens/FavoritesScreen.dart';
+import 'models/order.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
@@ -65,7 +67,6 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (_) => DeliveryOptionScreen(
                 subtotal: args['subtotal'] ?? 0.0,
-                orderId: args['orderId'],
               ),
             );
           case '/bag/reviewOrder':
@@ -99,6 +100,12 @@ class MyApp extends StatelessWidget {
                 rating: args['rating'],
                 workingHours: args['workingHours'],
                 business: args['business'] ?? {},
+              ),
+            );
+          case '/bag/pendingOrderDetails':
+            return MaterialPageRoute(
+              builder: (_) => PendingOrderDetailsScreen(
+                order: args['order'] as Order,
               ),
             );
 

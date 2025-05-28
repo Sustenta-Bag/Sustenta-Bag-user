@@ -203,6 +203,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       return '$itemCount Sacolas';
     }
   }
+
   String _getStatusDisplayName(String status) {
     final orderStatus = OrderStatusExtension.fromString(status);
     return orderStatus.displayName;
@@ -214,7 +215,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Cancelar Pedido'),
-          content: const Text('Você tem certeza que deseja cancelar este pedido?'),
+          content:
+              const Text('Você tem certeza que deseja cancelar este pedido?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -240,7 +242,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         }
 
         final success = await OrderService.cancelOrder(order.id!, token);
-        
+
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -248,7 +250,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          
+
           _loadOrderHistory();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -333,7 +335,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(_getOrderDescription(activeOrder!) +
-                                    ' | ${businessCache[activeOrder!.businessId]?.appName ?? 'Estabelecimento'}'),                                if (activeOrder!.status == 'pendente') ...[
+                                    ' | ${businessCache[activeOrder!.businessId]?.appName ?? 'Estabelecimento'}'),
+                                if (activeOrder!.status == 'pendente') ...[
                                   const SizedBox(height: 8),
                                   Row(
                                     children: [
@@ -342,17 +345,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                           onPressed: () {
                                             Navigator.pushNamed(
                                               context,
-                                              '/bag/reviewOrder',
+                                              '/bag/pendingOrderDetails',
                                               arguments: {
-                                                'subtotal': activeOrder!.totalAmount,
-                                                'deliveryFee': 0.0,
+                                                'order': activeOrder!,
                                               },
                                             );
                                           },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.red,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
                                             ),
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 16,
@@ -372,11 +375,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: ElevatedButton(
-                                          onPressed: () => _cancelOrder(activeOrder!),
+                                          onPressed: () =>
+                                              _cancelOrder(activeOrder!),
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.grey[600],
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
                                             ),
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 16,
@@ -500,7 +505,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-              ],              if (order.status == 'pendente') ...[
+              ],
+              if (order.status == 'pendente') ...[
                 Row(
                   children: [
                     Expanded(
@@ -508,10 +514,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         onPressed: () {
                           Navigator.pushNamed(
                             context,
-                            '/bag/reviewOrder',
+                            '/bag/pendingOrderDetails',
                             arguments: {
-                              'subtotal': order.totalAmount,
-                              'deliveryFee': 0.0,
+                              'order': order,
                             },
                           );
                         },
