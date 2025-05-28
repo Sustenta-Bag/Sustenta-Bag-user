@@ -65,7 +65,6 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (_) => DeliveryOptionScreen(
                 subtotal: args['subtotal'] ?? 0.0,
-                orderId: args['orderId'],
               ),
             );
           case '/bag/reviewOrder':
