@@ -85,14 +85,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
               businessCache[order.businessId] = business;
             }
           }
-        }        setState(() {
+        }
+        setState(() {
           activeOrder = activeOrders.isNotEmpty ? activeOrders.first : null;
           orderHistory = orders
               .where((order) =>
-                  order.status != OrderStatus.pending.value &&
-                  order.status != OrderStatus.confirmed.value &&
-                  order.status != OrderStatus.preparing.value &&
-                  order.status != OrderStatus.ready.value)
+                  order.status != 'confirmado' &&
+                  order.status != 'preparando' &&
+                  order.status != 'pronto')
               .toList();
           hasMore = totalHasMore;
           currentOffset = pageSize;
@@ -129,6 +129,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         limit: pageSize,
         offset: currentOffset + pageSize,
       );
+
       if (historyResult != null) {
         final newOrders = historyResult['orders'] as List<Order>;
         final newHasMore = historyResult['hasMore'] as bool;
@@ -141,13 +142,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
               businessCache[order.businessId] = business;
             }
           }
-        }        setState(() {
+        }
+        setState(() {
           final filteredOrders = newOrders
               .where((order) =>
-                  order.status != OrderStatus.pending.value &&
-                  order.status != OrderStatus.confirmed.value &&
-                  order.status != OrderStatus.preparing.value &&
-                  order.status != OrderStatus.ready.value)
+                  order.status != 'confirmado' &&
+                  order.status != 'preparando' &&
+                  order.status != 'pronto')
               .toList();
 
           orderHistory.addAll(filteredOrders);
@@ -202,10 +203,70 @@ class _HistoryScreenState extends State<HistoryScreen> {
       return '$itemCount Sacolas';
     }
   }
-
   String _getStatusDisplayName(String status) {
     final orderStatus = OrderStatusExtension.fromString(status);
     return orderStatus.displayName;
+  }
+
+  Future<void> _cancelOrder(Order order) async {
+    final shouldCancel = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Cancelar Pedido'),
+          content: const Text('Você tem certeza que deseja cancelar este pedido?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Não'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: const Text('Sim, cancelar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldCancel == true) {
+      try {
+        final token = await DatabaseHelper.instance.getToken();
+        if (token == null) {
+          throw Exception('Token de autenticação não encontrado');
+        }
+
+        final success = await OrderService.cancelOrder(order.id!, token);
+        
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Pedido cancelado com sucesso'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          _loadOrderHistory();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erro ao cancelar pedido'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -272,20 +333,80 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(_getOrderDescription(activeOrder!) +
-                                    ' | ${businessCache[activeOrder!.businessId]?.appName ?? 'Estabelecimento'}'),
+                                    ' | ${businessCache[activeOrder!.businessId]?.appName ?? 'Estabelecimento'}'),                                if (activeOrder!.status == 'pendente') ...[
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/bag/reviewOrder',
+                                              arguments: {
+                                                'subtotal': activeOrder!.totalAmount,
+                                                'deliveryFee': 0.0,
+                                              },
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 8,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Pagar Agora',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: ElevatedButton(
+                                          onPressed: () => _cancelOrder(activeOrder!),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.grey[600],
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 8,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Cancelar',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ],
                             ),
                           ),
                           const SizedBox(height: 32),
                         ],
-
                         const Text(
                           'Histórico',
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 24),
-
                         if (orderHistory.isEmpty)
                           const Center(
                             child: Padding(
@@ -305,7 +426,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                   order: order,
                                 ),
                               )),
-
                         if (isLoadingMore)
                           const Padding(
                             padding: EdgeInsets.symmetric(vertical: 16),
@@ -378,6 +498,68 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 4),
+              ],              if (order.status == 'pendente') ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/bag/reviewOrder',
+                            arguments: {
+                              'subtotal': order.totalAmount,
+                              'deliveryFee': 0.0,
+                            },
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                        ),
+                        child: const Text(
+                          'Pagar Agora',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => _cancelOrder(order),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[600],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                        ),
+                        child: const Text(
+                          'Cancelar',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
               ],

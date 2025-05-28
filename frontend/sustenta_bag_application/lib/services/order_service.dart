@@ -168,7 +168,12 @@ class OrderService {
         headers: ApiConfig.getHeaders(token),
       );
 
-      return response.statusCode == 200;
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        print('Erro ao cancelar pedido: ${response.statusCode} - ${response.body}');
+        return false;
+      }
     } catch (e) {
       print('Erro ao cancelar pedido: $e');
       return false;
@@ -229,7 +234,6 @@ class OrderService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('Dados do histórico de pedidos: $data');
         return {
           'orders': (data['orders'] as List<dynamic>)
               .map((json) => Order.fromJson(json))
