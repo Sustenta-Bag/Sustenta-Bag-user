@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../services/order_service.dart';
 import '../../services/cart_service.dart';
 import '../../utils/database_helper.dart';
 import '../../main.dart';
@@ -12,10 +11,8 @@ class BagScreen extends StatefulWidget {
 }
 
 class _BagScreenState extends State<BagScreen>
-    with WidgetsBindingObserver, RouteAware {
-  final CartService _cartService = CartService();
+    with WidgetsBindingObserver, RouteAware {  final CartService _cartService = CartService();
   bool _isLoading = false;
-  String? _errorMessage;
 
   @override
   void initState() {
@@ -91,8 +88,7 @@ class _BagScreenState extends State<BagScreen>
     final item = _cartService.items[index];
     _cartService.removeItem(item.bagId);
   }
-
-  Future<void> _createOrder() async {
+  void _goToDeliveryOptions() {
     if (_cartService.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Carrinho vazio')),
@@ -100,53 +96,13 @@ class _BagScreenState extends State<BagScreen>
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      final token = await DatabaseHelper.instance.getToken();
-      if (token == null) {
-        throw Exception('Token de autenticação não encontrado');
-      }
-
-      final userData = await DatabaseHelper.instance.getUser();
-      if (userData == null) {
-        throw Exception('Dados do usuário não encontrados');
-      }
-
-      final order = _cartService.createOrder(userData['id']);
-      final createdOrder = await OrderService.createOrder(order, token);
-      if (createdOrder != null) {
-        if (mounted) {
-          Navigator.pushNamed(
-            context,
-            '/bag/deliveryOptions',
-            arguments: {
-              'subtotal': order.totalAmount,
-              'orderId': createdOrder.id,
-            },
-          );
-        }
-      } else {
-        throw Exception('Falha ao criar pedido');
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Erro ao criar pedido: ${e.toString()}';
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_errorMessage!)),
-        );
-      }
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    Navigator.pushNamed(
+      context,
+      '/bag/deliveryOptions',
+      arguments: {
+        'subtotal': _cartService.total,
+      },
+    );
   }
 
   @override
@@ -265,7 +221,7 @@ class _BagScreenState extends State<BagScreen>
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: _isLoading ? null : _createOrder,
+                  onPressed: _isLoading ? null : _goToDeliveryOptions,
                   child: _isLoading
                       ? const SizedBox(
                           height: 20,

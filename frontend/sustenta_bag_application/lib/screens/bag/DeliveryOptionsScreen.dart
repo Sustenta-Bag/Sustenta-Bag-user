@@ -10,12 +10,10 @@ import '../../utils/database_helper.dart';
 
 class DeliveryOptionScreen extends StatefulWidget {
   final double subtotal;
-  final int? orderId;
 
   const DeliveryOptionScreen({
     super.key,
     required this.subtotal,
-    this.orderId,
   });
 
   @override

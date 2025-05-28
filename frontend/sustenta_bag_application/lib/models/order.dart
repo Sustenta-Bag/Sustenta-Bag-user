@@ -27,15 +27,15 @@ class Order {
       userId: json['userId'],
       businessId: json['businessId'],
       status: json['status'],
-      totalAmount: (json['totalAmount'] is num) 
-          ? json['totalAmount'].toDouble() 
-          : 0.0,
+      totalAmount:
+          (json['totalAmount'] is num) ? json['totalAmount'].toDouble() : 0.0,
       notes: json['notes'],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
       items: (json['items'] as List<dynamic>?)
-          ?.map((item) => OrderItem.fromJson(item))
-          .toList() ?? [],
+              ?.map((item) => OrderItem.fromJson(item))
+              .toList() ??
+          [],
     );
   }
 
@@ -53,15 +53,16 @@ class Order {
     };
   }
 
-  // Helper method para criar payload de criação de pedido
   Map<String, dynamic> toCreatePayload() {
     return {
       'userId': userId,
       'businessId': businessId,
-      'items': items.map((item) => {
-        'bagId': item.bagId,
-        'quantity': item.quantity,
-      }).toList(),
+      'items': items
+          .map((item) => {
+                'bagId': item.bagId,
+                'quantity': item.quantity,
+              })
+          .toList(),
     };
   }
 }
@@ -86,19 +87,27 @@ class OrderItem {
     this.bagName,
     this.bagDescription,
   });
-
   factory OrderItem.fromJson(Map<String, dynamic> json) {
+    double priceValue = 0.0;
+    if (json['price'] != null) {
+      if (json['price'] is String) {
+        priceValue = double.tryParse(json['price']) ?? 0.0;
+      } else if (json['price'] is num) {
+        priceValue = json['price'].toDouble();
+      }
+    } else if (json['unitPrice'] is num) {
+      priceValue = json['unitPrice'].toDouble();
+    }
+
     return OrderItem(
       id: json['id'],
       orderId: json['orderId'],
       bagId: json['bagId'],
       quantity: json['quantity'],
-      unitPrice: (json['unitPrice'] is num) 
-          ? json['unitPrice'].toDouble() 
-          : 0.0,
-      totalPrice: (json['totalPrice'] is num) 
-          ? json['totalPrice'].toDouble() 
-          : 0.0,
+      unitPrice: priceValue,
+      totalPrice: (json['totalPrice'] is num)
+          ? json['totalPrice'].toDouble()
+          : priceValue * (json['quantity'] ?? 1),
       bagName: json['bagName'],
       bagDescription: json['bagDescription'],
     );
@@ -118,7 +127,6 @@ class OrderItem {
   }
 }
 
-// Enum para status do pedido
 enum OrderStatus {
   pending,
   confirmed,
@@ -162,6 +170,7 @@ extension OrderStatusExtension on OrderStatus {
         return 'cancelled';
     }
   }
+
   static OrderStatus fromString(String status) {
     switch (status.toLowerCase()) {
       case 'pending':
