@@ -61,7 +61,7 @@ class MyApp extends StatelessWidget {
         '/register1': (_) => RegisterStep1(),
         '/register2': (_) => RegisterStep2(),
         '/register3': (_) => RegisterStep3(),
-        '/Bag/payment': (_) => const PaymentScreen(),
+        '/bag/payment': (_) => const PaymentScreen(),
         '/favorites': (_) => FavoritesScreen(),
         '/user_data': (_) => const UserDataScreen(),
         "/edit_step1": (ctx) => const EditUserStep1(),
@@ -70,13 +70,13 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: (settings) {
         final args = (settings.arguments ?? {}) as Map<String, dynamic>;
         switch (settings.name) {
-          case '/Bag/deliveryOptions':
+          case '/bag/deliveryOptions':
             return MaterialPageRoute(
               builder: (_) => DeliveryOptionScreen(
                 subtotal: args['subtotal'] ?? 0.0,
               ),
             );
-          case '/Bag/reviewOrder':
+          case '/bag/reviewOrder':
             return MaterialPageRoute(
               builder: (_) => ReviewOrderScreen(
                 subtotal: args['subtotal'] ?? 0.0,

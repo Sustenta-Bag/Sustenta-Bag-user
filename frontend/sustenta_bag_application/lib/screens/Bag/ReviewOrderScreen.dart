@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/order_service.dart';
 import '../../services/cart_service.dart';
+import '../../services/payment_service.dart';
 import '../../utils/database_helper.dart';
 
 class ReviewOrderScreen extends StatefulWidget {
@@ -23,7 +24,6 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
   String? _errorMessage;
 
   double get total => widget.subtotal + widget.deliveryFee;
-
   Future<void> _createOrderAndProceedToPayment() async {
     if (_cartService.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -50,17 +50,42 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
 
       final order = _cartService.createOrder(userData['id']);
       final createdOrder = await OrderService.createOrder(order, token);
-      
-      if (createdOrder != null) {
-        if (mounted) {
-          // Limpa o carrinho após criar a ordem com sucesso
-          _cartService.clear();
-          
-          // Navega para a tela de pagamento
-          Navigator.pushNamed(context, '/bag/payment');
-        }
-      } else {
+
+      if (createdOrder == null) {
         throw Exception('Falha ao criar pedido');
+      }
+
+      final cartItems = _cartService.items;
+      final paymentItems = cartItems
+          .map((cartItem) => {
+                'title': cartItem.name,
+                'description': cartItem.description ?? cartItem.name,
+                'quantity': cartItem.quantity,
+                'unitPrice': cartItem.price,
+              })
+          .toList();
+
+      final payerInfo = {
+        'email': userData['email'] ?? 'user@example.com',
+        'name': userData['name'] ?? 'Usuário',
+        'identification': {'type': 'CPF', 'number': '12345678901'}
+      };
+      final paymentData = await PaymentService.createPayment(
+        userId: userData['id'].toString(),
+        orderId: createdOrder.id.toString(),
+        items: paymentItems,
+        payer: payerInfo,
+      );
+      if (paymentData != null && mounted) {
+        _cartService.clear();
+        Navigator.pushNamed(context, '/bag/payment', arguments: {
+          'paymentId': paymentData['paymentId'],
+          'paymentUrl': paymentData['paymentUrl'],
+          'orderId': createdOrder.id,
+          'amount': total,
+        });
+      } else {
+        throw Exception('Falha ao criar pagamento');
       }
     } catch (e) {
       setState(() {
@@ -105,7 +130,8 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
               'Resumo de valores',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const SizedBox(height: 24),            _buildRow('Subtotal', widget.subtotal),
+            const SizedBox(height: 24),
+            _buildRow('Subtotal', widget.subtotal),
             const SizedBox(height: 8),
             _buildRow('Taxa de entrega', widget.deliveryFee),
             const SizedBox(height: 24),
