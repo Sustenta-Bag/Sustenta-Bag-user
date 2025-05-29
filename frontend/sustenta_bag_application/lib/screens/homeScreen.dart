@@ -34,7 +34,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     try {
       final token = await DatabaseHelper.instance.getToken();
-      
+
       if (token == null) {
         setState(() {
           errorMessage = 'Token de autenticação não encontrado';
@@ -61,13 +61,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           errorMessage = 'Nenhuma sacola encontrada próxima a você';
           isLoading = false;
         });
-      }    } catch (e) {
+      }
+    } catch (e) {
       setState(() {
         errorMessage = 'Erro ao carregar sacolas: ${e.toString()}';
         isLoading = false;
       });
     }
   }
+
   List<Map<String, dynamic>> get filteredBags {
     if (selectedCategory == 'Ver tudo') return allBags;
     return LocationService.filterBagsByCategory(allBags, selectedCategory);
@@ -97,9 +99,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   duration: Duration(seconds: 1),
                 ),
               );
-              
-              final success = await FirebaseMessagingService.sendFCMTokenToServer();
-              
+
+              final success =
+                  await FirebaseMessagingService.sendFCMTokenToServer();
+
               if (success) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -119,7 +122,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
           ),
         ],
-      ),      body: RefreshIndicator(
+      ),
+      body: RefreshIndicator(
         onRefresh: _loadNearbyBags,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -172,7 +176,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         child: const CircleAvatar(
                           radius: 12,
                           backgroundColor: Colors.black38,
-                          child: Icon(Icons.close, color: Colors.white, size: 16),
+                          child:
+                              Icon(Icons.close, color: Colors.white, size: 16),
                         ),
                       ),
                     ),
@@ -235,7 +240,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   child: Column(
                     children: [
-                      Icon(Icons.error_outline, color: Colors.red[600], size: 48),
+                      Icon(Icons.error_outline,
+                          color: Colors.red[600], size: 48),
                       const SizedBox(height: 8),
                       Text(
                         errorMessage!,
@@ -262,9 +268,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   padding: const EdgeInsets.all(32),
                   child: Column(
                     children: [
-                      Icon(Icons.shopping_bag_outlined, 
-                           size: 64, 
-                           color: Colors.grey[400]),
+                      Icon(Icons.shopping_bag_outlined,
+                          size: 64, color: Colors.grey[400]),
                       const SizedBox(height: 16),
                       Text(
                         'Nenhuma sacola encontrada',
@@ -313,6 +318,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
   Widget _buildCategory(String title, IconData icon) {
     final isSelected = selectedCategory == title;
     return GestureDetector(
