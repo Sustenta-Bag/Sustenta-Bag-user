@@ -36,7 +36,6 @@ class PaymentService {
       return null;
     }
   }
-
   static Future<Map<String, dynamic>?> getPaymentStatus(String paymentId) async {
     try {
       final response = await http.get(
@@ -55,6 +54,32 @@ class PaymentService {
       }
     } catch (e) {
       print('Erro ao buscar status do pagamento: $e');
+      return null;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> getPaymentByOrderId(String orderId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/payments/order/$orderId'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('Pagamento encontrado para orderId $orderId: ${data['data']}');
+        return data['data'];
+      } else if (response.statusCode == 404) {
+        print('Nenhum pagamento encontrado para orderId $orderId');
+        return null;
+      } else {
+        print('Erro ao buscar pagamento por orderId: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Erro ao buscar pagamento por orderId: $e');
       return null;
     }
   }

@@ -48,50 +48,42 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
         throw Exception('Dados do usuário não encontrados');
       }
 
-      // Primeiro, cria o pedido no sistema principal
       final order = _cartService.createOrder(userData['id']);
       final createdOrder = await OrderService.createOrder(order, token);
-      
+
       if (createdOrder == null) {
         throw Exception('Falha ao criar pedido');
       }
 
-      // Prepara os dados para o payment service
       final cartItems = _cartService.items;
-      final paymentItems = cartItems.map((cartItem) => {
-        'title': cartItem.name,
-        'description': cartItem.description ?? cartItem.name,
-        'quantity': cartItem.quantity,
-        'unitPrice': cartItem.price,
-      }).toList();
+      final paymentItems = cartItems
+          .map((cartItem) => {
+                'title': cartItem.name,
+                'description': cartItem.description ?? cartItem.name,
+                'quantity': cartItem.quantity,
+                'unitPrice': cartItem.price,
+              })
+          .toList();
 
       final payerInfo = {
         'email': userData['email'] ?? 'user@example.com',
         'name': userData['name'] ?? 'Usuário',
-        'identification': {
-          'type': 'CPF',
-          'number': '12345678901'
-        }
-      };      final paymentData = await PaymentService.createPayment(
+        'identification': {'type': 'CPF', 'number': '12345678901'}
+      };
+      final paymentData = await PaymentService.createPayment(
         userId: userData['id'].toString(),
         orderId: createdOrder.id.toString(),
         items: paymentItems,
         payer: payerInfo,
       );
-
       if (paymentData != null && mounted) {
         _cartService.clear();
-        
-        Navigator.pushNamed(
-          context, 
-          '/bag/payment',
-          arguments: {
-            'paymentId': paymentData['paymentId'],
-            'paymentUrl': paymentData['paymentUrl'],
-            'orderId': createdOrder.id,
-            'amount': total,
-          }
-        );
+        Navigator.pushNamed(context, '/bag/payment', arguments: {
+          'paymentId': paymentData['paymentId'],
+          'paymentUrl': paymentData['paymentUrl'],
+          'orderId': createdOrder.id,
+          'amount': total,
+        });
       } else {
         throw Exception('Falha ao criar pagamento');
       }
@@ -138,7 +130,8 @@ class _ReviewOrderScreenState extends State<ReviewOrderScreen> {
               'Resumo de valores',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const SizedBox(height: 24),            _buildRow('Subtotal', widget.subtotal),
+            const SizedBox(height: 24),
+            _buildRow('Subtotal', widget.subtotal),
             const SizedBox(height: 8),
             _buildRow('Taxa de entrega', widget.deliveryFee),
             const SizedBox(height: 24),

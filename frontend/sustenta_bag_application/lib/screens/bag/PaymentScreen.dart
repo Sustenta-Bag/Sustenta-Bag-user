@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:async';
 import '../../services/payment_service.dart';
+import '../../services/order_service.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -10,40 +11,79 @@ class PaymentScreen extends StatefulWidget {
   State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-class _PaymentScreenState extends State<PaymentScreen> {
+class _PaymentScreenState extends State<PaymentScreen>
+    with TickerProviderStateMixin {
   late VideoPlayerController _controller;
-  Timer? _statusCheckTimer;  String? _paymentId;
+  Timer? _statusCheckTimer;
+  Timer? _redirectTimer;
+  String? _paymentId;
   double? _amount;
-  
+
   String _paymentStatus = 'pending';
   bool _isLoading = true;
   String? _errorMessage;
   int _statusCheckCount = 0;
   static const int maxStatusChecks = 60;
 
+  late AnimationController _successAnimationController;
+  late AnimationController _errorAnimationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
+
+  int _redirectCountdown = 3;
+
   @override
   void initState() {
     super.initState();
+
+    _successAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _errorAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _successAnimationController,
+      curve: Curves.elasticOut,
+    ));
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _successAnimationController,
+      curve: Curves.easeIn,
+    ));
+
     _controller = VideoPlayerController.asset('assets/payment.mp4')
       ..initialize().then((_) {
-        setState(() {}); 
+        setState(() {});
         _controller.play();
         _controller.setLooping(true);
       });
-    
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializePayment();
     });
   }
 
   void _initializePayment() {
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;    if (args != null) {
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+
+    if (args != null) {
       setState(() {
         _paymentId = args['paymentId'];
         _amount = args['amount'];
         _isLoading = false;
       });
-      
+
       _startStatusMonitoring();
     } else {
       setState(() {
@@ -55,8 +95,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   void _startStatusMonitoring() {
     if (_paymentId == null) return;
-    
-    _statusCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+
+    _statusCheckTimer =
+        Timer.periodic(const Duration(seconds: 5), (timer) async {
       if (_statusCheckCount >= maxStatusChecks) {
         timer.cancel();
         setState(() {
@@ -65,87 +106,61 @@ class _PaymentScreenState extends State<PaymentScreen> {
         });
         return;
       }
-      
+
       final paymentData = await PaymentService.getPaymentStatus(_paymentId!);
       if (paymentData != null) {
         setState(() {
           _paymentStatus = paymentData['status'] ?? 'pending';
         });
-        
+
         if (_paymentStatus == 'approved' || _paymentStatus == 'rejected') {
           timer.cancel();
           _handlePaymentResult();
         }
       }
-      
+
       _statusCheckCount++;
     });
   }
-  
+
   void _handlePaymentResult() {
     if (_paymentStatus == 'approved') {
-      // Order status is automatically updated by the payment webhook
-      // No need to manually update the order status here
-      _showSuccessDialog();
+      _successAnimationController.forward();
+      _startRedirectCountdown();
     } else if (_paymentStatus == 'rejected') {
-      _showErrorDialog('Pagamento rejeitado. Tente novamente com outro método de pagamento.');
+      _errorAnimationController.forward();
+      _cancelAssociatedOrder();
+      _startRedirectCountdown();
     }
   }
 
-  // Removed _updateOrderStatus method as order status is now handled 
-  // automatically by the payment service webhook
+  void _startRedirectCountdown() {
+    _redirectTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _redirectCountdown--;
+      });
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 30),
-            SizedBox(width: 10),
-            Text('Pagamento Aprovado!'),
-          ],
-        ),
-        content: Text(
-          'Seu pagamento de R\$ ${_amount?.toStringAsFixed(2)} foi aprovado com sucesso.\n\nSeu pedido será preparado em breve.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+      if (_redirectCountdown <= 0) {
+        timer.cancel();
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/home', (route) => false);
+      }
+    });
   }
 
-  void _showErrorDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.error, color: Colors.red, size: 30),
-            SizedBox(width: 10),
-            Text('Erro no Pagamento'),
-          ],
-        ),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
-            child: const Text('Tentar Novamente'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _cancelAssociatedOrder() async {
+    try {
+      if (_paymentId != null) {
+        final paymentData = await PaymentService.getPaymentStatus(_paymentId!);
+        if (paymentData != null && paymentData['orderId'] != null) {
+          final orderId = paymentData['orderId'];
+          await OrderService.cancelOrder(orderId, 'Payment rejected');
+          print('Order $orderId canceled due to payment rejection');
+        }
+      }
+    } catch (e) {
+      print('Error canceling associated order: $e');
+    }
   }
 
   Future<void> _simulateApproval() async {
@@ -162,7 +177,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> _simulateRejection() async {
     if (_paymentId != null) {
-      final success = await PaymentService.simulatePaymentRejection(_paymentId!);
+      final success =
+          await PaymentService.simulatePaymentRejection(_paymentId!);
       if (success) {
         setState(() {
           _paymentStatus = 'rejected';
@@ -185,12 +201,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
   void dispose() {
     _controller.dispose();
     _statusCheckTimer?.cancel();
+    _redirectTimer?.cancel();
+    _successAnimationController.dispose();
+    _errorAnimationController.dispose();
     super.dispose();
   }
 
   Widget buildProgressBar() {
-    List<Color> colors = [Colors.grey.shade400, Colors.grey.shade400, Colors.grey.shade400];
-    
+    List<Color> colors = [
+      Colors.grey.shade400,
+      Colors.grey.shade400,
+      Colors.grey.shade400
+    ];
+
     switch (_paymentStatus) {
       case 'pending':
         colors = [Colors.black, Colors.black, Colors.grey.shade400];
@@ -203,7 +226,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         colors = [Colors.red, Colors.red, Colors.red];
         break;
     }
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -226,14 +249,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
       ),
     );
   }
+
   String _getStatusMessage() {
     switch (_paymentStatus) {
       case 'pending':
         return 'Aguardando confirmação do pagamento...\n\nEm desenvolvimento: Use os botões abaixo para simular o resultado do pagamento.';
       case 'approved':
-        return 'Pagamento aprovado! Redirecionando...';
+        return 'Pagamento aprovado! Redirecionando em $_redirectCountdown segundos...';
       case 'rejected':
-        return 'Pagamento rejeitado';
+        return 'Pagamento rejeitado. Redirecionando em $_redirectCountdown segundos...';
       case 'cancelled':
         return 'Pagamento cancelado';
       case 'timeout':
@@ -284,7 +308,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(_paymentStatus == 'approved' ? 'Pagamento Aprovado' : 'Aguardando Pagamento'),
+        title: Text(_paymentStatus == 'approved'
+            ? 'Pagamento Aprovado'
+            : 'Aguardando Pagamento'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -331,19 +357,47 @@ class _PaymentScreenState extends State<PaymentScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const SizedBox(height: 40),
-              if (_controller.value.isInitialized && _paymentStatus != 'approved')
+              if (_paymentStatus == 'approved')
+                AnimatedBuilder(
+                  animation: _successAnimationController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: Opacity(
+                        opacity: _opacityAnimation.value,
+                        child: const Icon(
+                          Icons.check_circle,
+                          size: 200,
+                          color: Colors.green,
+                        ),
+                      ),
+                    );
+                  },
+                )
+              else if (_paymentStatus == 'rejected')
+                AnimatedBuilder(
+                  animation: _errorAnimationController,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _scaleAnimation.value,
+                      child: Opacity(
+                        opacity: _opacityAnimation.value,
+                        child: const Icon(
+                          Icons.cancel,
+                          size: 200,
+                          color: Colors.red,
+                        ),
+                      ),
+                    );
+                  },
+                )
+              else if (_controller.value.isInitialized)
                 SizedBox(
                   height: 250,
                   child: AspectRatio(
                     aspectRatio: _controller.value.aspectRatio,
                     child: VideoPlayer(_controller),
                   ),
-                )
-              else if (_paymentStatus == 'approved')
-                const Icon(
-                  Icons.check_circle,
-                  size: 200,
-                  color: Colors.green,
                 )
               else
                 const CircularProgressIndicator(),
@@ -358,6 +412,30 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       style: const TextStyle(fontSize: 16),
                     ),
                   ),
+                  if (_paymentStatus == 'approved' ||
+                      _paymentStatus == 'rejected') ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _paymentStatus == 'approved'
+                            ? Colors.green
+                            : Colors.red,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$_redirectCountdown',
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   if (_amount != null) ...[
                     const SizedBox(height: 16),
                     Text(
@@ -370,7 +448,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ],
                   const SizedBox(height: 10),
                   buildProgressBar(),
-                  const SizedBox(height: 20),                  if (_paymentStatus == 'pending') ...[
+                  const SizedBox(height: 20),
+                  if (_paymentStatus == 'pending') ...[
                     const Text(
                       'Verificando status a cada 5 segundos...',
                       style: TextStyle(
@@ -403,19 +482,23 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         ElevatedButton.icon(
                           onPressed: _simulateApproval,
                           icon: const Icon(Icons.check, color: Colors.white),
-                          label: const Text('Aprovar', style: TextStyle(color: Colors.white)),
+                          label: const Text('Aprovar',
+                              style: TextStyle(color: Colors.white)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                           ),
                         ),
                         ElevatedButton.icon(
                           onPressed: _simulateRejection,
                           icon: const Icon(Icons.close, color: Colors.white),
-                          label: const Text('Rejeitar', style: TextStyle(color: Colors.white)),
+                          label: const Text('Rejeitar',
+                              style: TextStyle(color: Colors.white)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
                           ),
                         ),
                       ],
