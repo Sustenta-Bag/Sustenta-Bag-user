@@ -37,7 +37,7 @@ class BagCard extends StatelessWidget {
               price: price,
               category: category,
               storeLogo: 'assets/mcd.png',
-              storeName: 'McDonald\'s',
+              storeName: business.name,
               business: business,
             ),
           ),
@@ -51,47 +51,59 @@ class BagCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Center(
-              child: Image.asset(
-                imagePath,
-                width: 180,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.asset(
+                  imagePath,
+                  width: double.infinity,
+                  height: 140,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
               title,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               description,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(fontSize: 13, color: Colors.grey),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            const Spacer(),
+            const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  "R\$${price.toStringAsFixed(2)}",
-                  style: const TextStyle(
-                      fontSize: 14, fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    "R\$${price.toStringAsFixed(2)}",
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 SizedBox(
-                  width: 30,
-                  height: 30,
+                  width: 32,
+                  height: 32,
                   child: ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       padding: EdgeInsets.zero,
                     ),
                     child: const Icon(
                       Icons.add,
-                      size: 20,
+                      size: 18,
                       color: Colors.white,
                     ),
                   ),
