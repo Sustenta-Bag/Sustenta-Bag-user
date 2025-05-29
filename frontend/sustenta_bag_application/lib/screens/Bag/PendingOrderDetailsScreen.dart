@@ -5,6 +5,7 @@ import '../../models/bag.dart';
 import '../../services/business_service.dart';
 import '../../services/order_service.dart';
 import '../../services/bag_service.dart';
+import '../../services/payment_service.dart';
 import '../../utils/database_helper.dart';
 
 class PendingOrderDetailsScreen extends StatefulWidget {
@@ -25,6 +26,7 @@ class _PendingOrderDetailsScreenState extends State<PendingOrderDetailsScreen> {
   Order? fullOrder;
   Map<int, Bag> bagDetails = {};
   bool isLoading = true;
+  bool isCreatingPayment = false;
   String? errorMessage;
 
   @override
@@ -71,6 +73,98 @@ class _PendingOrderDetailsScreenState extends State<PendingOrderDetailsScreen> {
       setState(() {
         errorMessage = e.toString();
         isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _createPaymentAndProceed() async {
+    if (fullOrder == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Dados do pedido não carregados')),
+      );
+      return;
+    }
+
+    setState(() {
+      isCreatingPayment = true;
+      errorMessage = null;
+    });
+
+    try {
+      final token = await DatabaseHelper.instance.getToken();
+      if (token == null) {
+        throw Exception('Token de autenticação não encontrado');
+      }
+
+      final userData = await DatabaseHelper.instance.getUser();
+      if (userData == null) {
+        throw Exception('Dados do usuário não encontrados');
+      }
+      Map<String, dynamic>? paymentData;
+
+      print('Tentando criar pagamento para o pedido ${fullOrder!.id}');
+
+      final paymentItems = fullOrder!.items
+          .map((orderItem) => {
+                'title': orderItem.bagName ?? 'Sacola',
+                'description':
+                    orderItem.bagDescription ?? orderItem.bagName ?? 'Sacola',
+                'quantity': orderItem.quantity,
+                'unitPrice': orderItem.unitPrice,
+              })
+          .toList();
+
+      final payerInfo = {
+        'email': userData['email'] ?? 'user@example.com',
+        'name': userData['name'] ?? 'Usuário',
+        'identification': {'type': 'CPF', 'number': '12345678901'}
+      };
+
+      paymentData = await PaymentService.createPayment(
+        userId: userData['id'].toString(),
+        orderId: fullOrder!.id.toString(),
+        items: paymentItems,
+        payer: payerInfo,
+      );
+
+      if (paymentData == null) {
+        print(
+            'Falha ao criar pagamento, tentando buscar pagamento existente...');
+        try {
+          paymentData = await PaymentService.getPaymentByOrderId(
+              fullOrder!.id.toString());
+          if (paymentData != null) {
+            print(
+                'Pagamento existente encontrado para o pedido ${fullOrder!.id}');
+          }
+        } catch (e) {
+          print('Erro ao buscar pagamento existente: $e');
+        }
+      }
+      if (paymentData != null && mounted) {
+        Navigator.pushNamed(context, '/bag/payment', arguments: {
+          'paymentId': paymentData['_id'],
+          'paymentUrl': paymentData['paymentUrl'],
+          'orderId': fullOrder!.id,
+          'amount': fullOrder!.totalAmount,
+        });
+      } else {
+        throw Exception('Falha ao obter dados do pagamento');
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Erro ao processar pagamento: ${e.toString()}';
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Erro ao processar pagamento: ${e.toString()}')),
+        );
+      }
+    } finally {
+      setState(() {
+        isCreatingPayment = false;
       });
     }
   }
@@ -258,13 +352,23 @@ class _PendingOrderDetailsScreenState extends State<PendingOrderDetailsScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/bag/payment');
-                          },
-                          child: const Text(
-                            'Pagar Agora',
-                            style: TextStyle(fontSize: 16, color: Colors.white),
-                          ),
+                          onPressed: isCreatingPayment
+                              ? null
+                              : _createPaymentAndProceed,
+                          child: isCreatingPayment
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Pagar Agora',
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.white),
+                                ),
                         ),
                       ),
                     ],
