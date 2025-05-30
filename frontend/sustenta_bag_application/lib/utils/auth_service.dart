@@ -6,7 +6,7 @@ import 'database_helper.dart';
 import 'firebase_messaging_service.dart';
 
 class AuthService {
-  static const String baseUrl = ApiConfig.baseUrl;
+  static String get baseUrl => ApiConfig.baseUrl;
   
   static Future<Map<String, dynamic>?> login(String email, String password) async {
     try {
