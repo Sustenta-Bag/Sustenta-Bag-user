@@ -4,7 +4,7 @@ import '../models/bag.dart';
 import '../utils/api_config.dart';
 
 class BagService {
-  static const String baseUrl = ApiConfig.baseUrl;
+  static String get baseUrl => ApiConfig.baseUrl;
 
   static Future<List<Bag>> getAllBags(String token) async {
     try {

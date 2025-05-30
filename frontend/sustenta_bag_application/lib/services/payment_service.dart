@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PaymentService {
-  static const String baseUrl = 'http://10.0.2.2:3001/api';  static Future<Map<String, dynamic>?> createPayment({
+  static String get baseUrl => dotenv.env['API_PAYMENT_BASE_URL'] ?? 'http://10.0.2.2:3001/api';
+  
+  static Future<Map<String, dynamic>?> createPayment({
     required String userId,
     required String orderId,
     required List<Map<String, dynamic>> items,

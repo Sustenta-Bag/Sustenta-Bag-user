@@ -4,7 +4,7 @@ import '../models/client.dart';
 import '../utils/api_config.dart';
 
 class ClientService {
-  static const String baseUrl = ApiConfig.baseUrl;
+  static String get baseUrl => ApiConfig.baseUrl;
 
   static Future<Client?> getClient(String id, String token) async {
     try {

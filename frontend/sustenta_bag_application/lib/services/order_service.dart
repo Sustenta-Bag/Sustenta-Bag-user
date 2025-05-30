@@ -4,7 +4,7 @@ import '../models/order.dart';
 import '../utils/api_config.dart';
 
 class OrderService {
-  static const String baseUrl = ApiConfig.baseUrl;
+  static String get baseUrl => ApiConfig.baseUrl;
 
   static Future<Order?> createOrder(Order order, String token) async {
     try {
