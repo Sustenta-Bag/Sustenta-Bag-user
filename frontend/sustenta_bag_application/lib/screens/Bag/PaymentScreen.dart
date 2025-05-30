@@ -61,7 +61,7 @@ class _PaymentScreenState extends State<PaymentScreen>
       curve: Curves.easeIn,
     ));
 
-    _controller = VideoPlayerController.asset('assets/payment.mp4')
+    _controller = VideoPlayerController.asset('assets/Payment.mp4')
       ..initialize().then((_) {
         setState(() {});
         _controller.play();

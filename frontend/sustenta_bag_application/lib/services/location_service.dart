@@ -4,7 +4,7 @@ import '../models/nearby_bag.dart';
 import '../utils/api_config.dart';
 
 class LocationService {
-  static const String baseUrl = ApiConfig.baseUrl;
+  static String get baseUrl => ApiConfig.baseUrl;
 
   static Future<NearbyBagsResponse?> getNearbyBags({
     required String token,

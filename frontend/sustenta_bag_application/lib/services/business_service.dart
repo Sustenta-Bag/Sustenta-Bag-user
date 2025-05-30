@@ -5,7 +5,7 @@ import '../utils/api_config.dart';
 import 'address_service.dart';
 
 class BusinessService {
-  static const String baseUrl = ApiConfig.baseUrl;
+  static String get baseUrl => ApiConfig.baseUrl;
 
   static Future<BusinessData?> getBusiness(int id, String token) async {
     try {

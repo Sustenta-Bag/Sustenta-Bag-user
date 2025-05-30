@@ -1,16 +1,14 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'database_helper.dart';
 import 'local_notification_service.dart';
 
-// Este handler DEVE ser uma função de nível superior (fora de qualquer classe)
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Certifique-se de que o Firebase está inicializado
   await Firebase.initializeApp();
   
   if (kDebugMode) {
@@ -23,7 +21,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 class FirebaseMessagingService {
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-  static const String baseUrl = 'http://10.0.2.2:4041/api';
+  static String get baseUrl => dotenv.env['API_MONOLITO_BASE_URL'] ?? 'http://10.0.2.2:4041/api';
   static String? _token;
   
   static String? get token => _token;
@@ -52,7 +50,6 @@ class FirebaseMessagingService {
           print('Permissões de notificação concedidas: ${settings.authorizationStatus}');
         }
       }
-
       _token = await _firebaseMessaging.getToken();
       if (kDebugMode && _token != null) {
         print('FCM Token: $_token');
