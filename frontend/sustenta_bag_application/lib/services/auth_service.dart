@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'api_config.dart';
-import 'database_helper.dart';
+import '../utils/api_config.dart';
+import '../utils/database_helper.dart';
 import 'firebase_messaging_service.dart';
 
 class AuthService {
