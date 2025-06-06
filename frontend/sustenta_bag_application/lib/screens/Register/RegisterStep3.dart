@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../utils/auth_service.dart';
+import '../../services/auth_service.dart';
 import '../../utils/estados_brasil.dart';
 
 class RegisterStep3 extends StatefulWidget {
