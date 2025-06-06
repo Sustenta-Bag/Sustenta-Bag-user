@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sustenta_bag_application/utils/cep_service.dart';
+import 'package:sustenta_bag_application/services/cep_service.dart';
 import 'package:sustenta_bag_application/utils/validators.dart';
 
 class RegisterStep2 extends StatefulWidget {
