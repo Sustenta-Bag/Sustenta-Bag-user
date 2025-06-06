@@ -68,6 +68,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
     _addToCart();
     Navigator.pushNamed(context, '/bag');
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,8 +94,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
               clipBehavior: Clip.none,
               children: [
                 Positioned(
-                  top:
-                      -25,
+                  top: -25,
                   left: -MediaQuery.of(context).size.width * 0.35,
                   right: -MediaQuery.of(context).size.width * 0.35,
                   child: Image.asset(
@@ -110,7 +110,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF225C4B),
+                      color: Colors.black,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -191,7 +191,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                               child: const Text(
                                 'Ver Loja',
                                 style: TextStyle(
-                                  color: Color(0xFF225C4B),
+                                  color: Colors.black,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -223,11 +223,13 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                           ),
                         ),
                       ),
-                    ),                    Expanded(
+                    ),
+                    Expanded(
                       child: Container(),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 8.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -238,7 +240,8 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                               fontWeight: FontWeight.bold,
                               color: Colors.green,
                             ),
-                          ),                        ],
+                          ),
+                        ],
                       ),
                     ),
                     Padding(
@@ -253,7 +256,8 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 padding: EdgeInsets.symmetric(vertical: 12),
-                              ),                              onPressed: _addToCart,
+                              ),
+                              onPressed: _addToCart,
                               child: const Text(
                                 'Adicionar à Sacola',
                                 style: TextStyle(
@@ -273,7 +277,9 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 padding: EdgeInsets.symmetric(vertical: 12),
-                              ),                              onPressed: _buyNow,                              child: Text(
+                              ),
+                              onPressed: _buyNow,
+                              child: Text(
                                 'Comprar R\$${widget.price.toStringAsFixed(2)}',
                                 style: const TextStyle(
                                   fontSize: 16,

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sustenta_bag_application/models/nearby_bag.dart';
-
+import 'package:sustenta_bag_application/services/favoriteService.dart';
+import '../utils/database_helper.dart';
 import 'ShowReviewScreen.dart';
 
 class StoreScreen extends StatefulWidget {
@@ -30,6 +31,9 @@ class StoreScreen extends StatefulWidget {
 
 class _StoreScreenState extends State<StoreScreen> {
   bool isFavorite = false;
+  bool isLoadingFavorite = true;
+  String? _token;
+  int? _userId;
 
   final Map<String, String> workingDays = {
     'Segunda-feira': '18:00 às 23:30',
@@ -40,6 +44,105 @@ class _StoreScreenState extends State<StoreScreen> {
     'Sábado': '18:00 às 23:30',
     'Domingo': '18:00 às 23:30',
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavoriteStatus();
+  }
+
+  Future<void> _loadFavoriteStatus() async {
+    try {
+      _token = await DatabaseHelper.instance.getToken();
+      _userId = await DatabaseHelper.instance.getUserId();
+      if (_token != null && _userId != null) {
+        final result =
+            await FavoriteService.isFavorite(widget.business.id, _token!);
+        if (mounted) {
+          setState(() {
+            isFavorite = result;
+          });
+        }
+      } else {
+        debugPrint(
+            "Token ou User ID não disponíveis. Favoritos não podem ser verificados/alterados.");
+        if (mounted) {
+          _showErrorSnackBar(
+              "Não foi possível verificar status de favorito (usuário não logado?)");
+        }
+      }
+    } catch (e) {
+      debugPrint("Erro ao carregar status de favorito: $e");
+      if (mounted) {
+        _showErrorSnackBar("Erro ao verificar favoritos");
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoadingFavorite = false);
+      }
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    if (_token == null || _userId == null || isLoadingFavorite) {
+      if (_userId == null) {
+        _showErrorSnackBar("Usuário não logado. Faça login para favoritar.");
+      }
+      return;
+    }
+
+    setState(() => isLoadingFavorite = true);
+
+    try {
+      bool success;
+      if (isFavorite) {
+        success =
+            await FavoriteService.removeFavorite(widget.business.id, _token!);
+      } else {
+        success = await FavoriteService.addFavorite(
+            widget.business.id, _userId!, _token!);
+      }
+
+      if (success && mounted) {
+        setState(() => isFavorite = !isFavorite);
+
+        final message = isFavorite
+            ? "${widget.storeName} adicionado aos favoritos"
+            : "${widget.storeName} removido dos favoritos";
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: isFavorite ? Colors.green : Colors.orange,
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else if (mounted) {
+        _showErrorSnackBar("Erro ao atualizar favoritos");
+      }
+    } catch (e) {
+      debugPrint("Erro ao alternar favorito: $e");
+      if (mounted) {
+        _showErrorSnackBar("Erro ao atualizar favoritos");
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isLoadingFavorite = false);
+      }
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,17 +161,7 @@ class _StoreScreenState extends State<StoreScreen> {
                     icon: const Icon(Icons.arrow_back, color: Colors.black),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  IconButton(
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Color(0xFF225C4B),
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        isFavorite = !isFavorite;
-                      });
-                    },
-                  ),
+                  _buildFavoriteButton(),
                 ],
               ),
             ),
@@ -93,7 +186,7 @@ class _StoreScreenState extends State<StoreScreen> {
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF225C4B),
+                      color: Colors.black,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -104,6 +197,21 @@ class _StoreScreenState extends State<StoreScreen> {
                     widget.business.logo ?? widget.storeLogo,
                     height: 200,
                     fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        width: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.store,
+                          size: 80,
+                          color: Colors.grey[400],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -122,53 +230,35 @@ class _StoreScreenState extends State<StoreScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(16.0),
                         decoration: BoxDecoration(
-                          color: Color.fromARGB(255, 242, 241, 241),
+                          color: const Color.fromARGB(255, 242, 241, 241),
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
                               color: const Color.fromARGB(255, 117, 116, 116)
                                   .withOpacity(0.2),
                               blurRadius: 10,
-                              offset: Offset(0, 4),
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
                         child: Row(
                           children: [
                             // WhatsApp
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: const Row(
-                                children: [
-                                  Icon(FontAwesomeIcons.whatsapp,
-                                      color: Colors.green),
-                                ],
-                              ),
+                            _buildActionButton(
+                              icon: FontAwesomeIcons.whatsapp,
+                              color: Colors.green,
+                              onTap: () {},
                             ),
                             const SizedBox(width: 8),
 
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: const Row(
-                                children: [
-                                  Icon(Icons.location_on, color: Colors.blue),
-                                ],
-                              ),
+                            _buildActionButton(
+                              icon: Icons.location_on,
+                              color: Colors.blue,
+                              onTap: () {},
                             ),
                             const SizedBox(width: 8),
 
+                            // Rating
                             InkWell(
                               onTap: () {
                                 Navigator.push(
@@ -182,19 +272,23 @@ class _StoreScreenState extends State<StoreScreen> {
                                 );
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.grey.shade300),
+                                  border:
+                                      Border.all(color: Colors.grey.shade300),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.star, color: Colors.amber, size: 16),
+                                    const Icon(Icons.star,
+                                        color: Colors.amber, size: 16),
                                     const SizedBox(width: 2),
                                     Text(
                                       widget.rating.toString(),
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ],
                                 ),
@@ -208,7 +302,7 @@ class _StoreScreenState extends State<StoreScreen> {
                               child: const Text(
                                 'Ver Sacolas',
                                 style: TextStyle(
-                                  color: Color(0xFF225C4B),
+                                  color: Colors.black,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -221,7 +315,7 @@ class _StoreScreenState extends State<StoreScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
                         widget.storeDescription,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.black,
                           fontSize: 14,
                         ),
@@ -234,7 +328,7 @@ class _StoreScreenState extends State<StoreScreen> {
                         child: Text(
                           'Fechado',
                           style: TextStyle(
-                            color: Color(0xFF225C4B),
+                            color: Colors.black,
                             fontWeight: FontWeight.bold,
                             fontSize: 19,
                           ),
@@ -256,8 +350,8 @@ class _StoreScreenState extends State<StoreScreen> {
                               children: [
                                 Text(
                                   day,
-                                  style: TextStyle(
-                                    color: Color(0xFF225C4B),
+                                  style: const TextStyle(
+                                    color: Colors.black,
                                     fontSize: 16,
                                   ),
                                 ),
@@ -280,6 +374,48 @@ class _StoreScreenState extends State<StoreScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFavoriteButton() {
+    if (isLoadingFavorite) {
+      return const SizedBox(
+        width: 24,
+        height: 24,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+
+    return IconButton(
+      icon: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        child: Icon(
+          isFavorite ? Icons.favorite : Icons.favorite_border,
+          key: ValueKey(isFavorite),
+          color: isFavorite ? Colors.red : Colors.black,
+          size: 28,
+        ),
+      ),
+      onPressed: _toggleFavorite,
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Icon(icon, color: color),
       ),
     );
   }

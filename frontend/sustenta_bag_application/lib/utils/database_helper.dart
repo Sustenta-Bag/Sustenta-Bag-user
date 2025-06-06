@@ -4,8 +4,9 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
+
   static DatabaseHelper get instance => _instance;
-  
+
   static Database? _database;
 
   DatabaseHelper._internal();
@@ -65,10 +66,10 @@ class DatabaseHelper {
   // User operations
   Future<int> saveUser(Map<String, dynamic> user) async {
     Database db = await database;
-    
+
     // Delete existing user data
     await db.delete('user');
-    
+
     return await db.insert('user', {
       'id': user['id'],
       'email': user['email'],
@@ -85,10 +86,10 @@ class DatabaseHelper {
   // Entity operations
   Future<int> saveEntity(Map<String, dynamic> entity) async {
     Database db = await database;
-    
+
     // Delete existing entity data
     await db.delete('entity');
-    
+
     return await db.insert('entity', {
       'id': entity['id'],
       'name': entity['name'],
@@ -101,13 +102,18 @@ class DatabaseHelper {
     });
   }
 
+  Future<int?> getUserId() async {
+    final userMap = await getUser();
+    return userMap?['id'] as int?;
+  }
+
   // Token operations
   Future<int> saveToken(String token) async {
     Database db = await database;
-    
+
     // Delete existing tokens
     await db.delete('auth_token');
-    
+
     return await db.insert('auth_token', {'token': token});
   }
 
