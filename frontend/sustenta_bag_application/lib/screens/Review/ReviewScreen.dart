@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import '../../models/review.dart';
+import '../../services/review_service.dart';
+import '../../utils/database_helper.dart';
+
 
 class ReviewScreen extends StatefulWidget {
   final String estabelecimento;
   final String estabelecimentoId;
+  final int idOrder;
+  final int idClient;
 
   const ReviewScreen({
     super.key,
     required this.estabelecimento,
     this.estabelecimentoId = '',
+    required this.idOrder,
+    required this.idClient,
   });
 
   @override
@@ -47,27 +55,54 @@ class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMix
   }
 
   Future<void> _submitReview() async {
-    if (_selectedStars == 0) return;
+    if (_selectedStars == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor, selecione uma avaliação em estrelas.')),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
-
     _submitAnimationController.forward();
 
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final token = await DatabaseHelper.instance.getToken();
+      if (token == null) {
+        throw Exception('Token de autenticação não encontrado');
+      }
 
-    final reviewData = {
-      'store_id': widget.estabelecimentoId,
-      'rating': _selectedStars,
-      'comment': _controller.text.trim(),
-      'timestamp': DateTime.now().toIso8601String(),
-    };
+      final reviewData = Review(
+        idOrder: widget.idOrder,
+        idClient: widget.idClient,
+        rating: _selectedStars,
+        comment: _controller.text.trim(),
+      );
 
-    print('Dados da avaliação: $reviewData');
+      final createdReview = await ReviewService.createReview(reviewData, token);
 
-    setState(() => _isLoading = false);
-
-    if (mounted) {
-      _showSuccessDialog();
+      if (createdReview != null) {
+        print('Avaliação enviada com sucesso: ${createdReview.id}');
+        if (mounted) {
+          _showSuccessDialog();
+        }
+      } else {
+        print('Falha ao enviar avaliação.');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Erro ao enviar avaliação. Tente novamente.')),
+          );
+        }
+      }
+    } catch (e) {
+      print('Erro no envio da avaliação: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro inesperado ao enviar avaliação: ${e.toString()}')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+      _submitAnimationController.reverse();
     }
   }
 
@@ -128,7 +163,7 @@ class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMix
                     ),
                     onPressed: () {
                       Navigator.of(context).pop();
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(true);
                     },
                     child: const Text('Continuar'),
                   ),

@@ -176,17 +176,14 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
         onRefresh: _loadReviews,
         child: CustomScrollView(
           slivers: [
-            // Cabeçalho com estatísticas
             SliverToBoxAdapter(
               child: _buildStatsHeader(),
             ),
 
-            // Filtros
             SliverToBoxAdapter(
               child: _buildFilters(),
             ),
 
-            // Lista de avaliações
             SliverList(
               delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -350,7 +347,6 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabeçalho do usuário
           Row(
             children: [
               const SizedBox(width: 12),
@@ -385,7 +381,6 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
 
           const SizedBox(height: 12),
 
-          // Produtos avaliados
           if (review.productNames.isNotEmpty) ...[
             Wrap(
               spacing: 8,

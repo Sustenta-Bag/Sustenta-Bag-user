@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sustenta_bag_application/models/nearby_bag.dart';
 
-import 'ShowReviewScreen.dart';
+import 'Review/ShowReviewScreen.dart';
 
 class StoreScreen extends StatefulWidget {
   final String id;
