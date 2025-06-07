@@ -8,7 +8,7 @@ import 'package:sustenta_bag_application/screens/ShowReviewScreen.dart';
 import 'package:sustenta_bag_application/screens/StoreScreen.dart';
 import 'package:sustenta_bag_application/firebase_options.dart';
 import 'package:sustenta_bag_application/screens/UserDataScreen.dart';
-import 'package:sustenta_bag_application/utils/firebase_messaging_service.dart';
+import 'package:sustenta_bag_application/services/firebase_messaging_service.dart';
 import 'screens/IntroScreen.dart';
 import 'screens/LoginScreen.dart';
 import 'screens/Register/RegisterStep1.dart';
