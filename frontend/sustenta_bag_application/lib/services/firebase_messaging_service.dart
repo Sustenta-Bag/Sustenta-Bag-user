@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'database_helper.dart';
+import '../utils/database_helper.dart';
 import 'local_notification_service.dart';
 
 @pragma('vm:entry-point')

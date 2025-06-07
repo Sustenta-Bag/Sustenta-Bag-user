@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/address.dart';
 import '../services/address_service.dart';
-import '../utils/auth_service.dart';
+import '../services/auth_service.dart';
 import '../utils/database_helper.dart';
+import 'package:sustenta_bag_application/screens/FavoritesScreen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -29,7 +30,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      // Carregar token
       _token = await DatabaseHelper.instance.getToken();
       if (_token == null) {
         if (!mounted) return;
@@ -37,7 +37,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return;
       }
 
-      // Carregar dados do usuário
       final userData = await AuthService.getCurrentUser();
       if (userData == null) {
         if (!mounted) return;
@@ -48,12 +47,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         jsonData = userData;
       });
 
-      final address = await AddressService.getAddress(
-          jsonData["entity"]["idAddress"].toString(), _token!);
-      if (mounted) {
-        setState(() {
-          _address = address;
-        });
+      if (jsonData["entity"] != null &&
+          jsonData["entity"]["idAddress"] is int) {
+        final address = await AddressService.getAddress(
+            jsonData["entity"]["idAddress"].toString(), _token!);
+        if (mounted) {
+          setState(() {
+            _address = address;
+          });
+        }
+      } else {
+        debugPrint(
+            "idAddress não encontrado ou não é um inteiro para carregar o endereço.");
       }
     } catch (e) {
       if (mounted) {
@@ -108,21 +113,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showFavorites() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Funcionalidade de Favoritos em desenvolvimento')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            const FavoritesScreen(),
+      ),
     );
   }
 
   void _goToUserData() {
     Navigator.pushNamed(context, '/user_data');
-  }
-
-  void _editProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-          content: Text('Funcionalidade de Edição em desenvolvimento')),
-    );
   }
 
   @override
@@ -159,7 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: Color(0xFFE8514C),
+                      backgroundColor: const Color(0xFFE8514C),
                       child: Text(
                         (jsonData["entity"]["name"] ?? 'U')[0].toUpperCase(),
                         style: const TextStyle(
@@ -301,7 +302,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
-
 Widget _buildSection(String title, List<Widget> children) {
   return Container(
     width: double.infinity,

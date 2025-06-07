@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sustenta_bag_application/utils/auth_service.dart';
+import 'package:sustenta_bag_application/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
