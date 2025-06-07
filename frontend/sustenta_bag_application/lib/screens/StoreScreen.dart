@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:sustenta_bag_application/models/nearby_bag.dart';
-import 'package:sustenta_bag_application/services/favoriteService.dart';
+import 'package:sustenta_bag_application/models/business.dart';
+import 'package:sustenta_bag_application/services/favorite_service.dart';
 import '../utils/database_helper.dart';
 import 'ShowReviewScreen.dart';
 
@@ -12,7 +12,7 @@ class StoreScreen extends StatefulWidget {
   final String storeDescription;
   final double rating;
   final String workingHours;
-  final Business business;
+  final BusinessData business;
 
   const StoreScreen({
     super.key,
@@ -107,8 +107,8 @@ class _StoreScreenState extends State<StoreScreen> {
         setState(() => isFavorite = !isFavorite);
 
         final message = isFavorite
-            ? "${widget.storeName} adicionado aos favoritos"
-            : "${widget.storeName} removido dos favoritos";
+            ? "${widget.business.appName} adicionado aos favoritos"
+            : "${widget.business.appName} removido dos favoritos";
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -182,7 +182,7 @@ class _StoreScreenState extends State<StoreScreen> {
                 Positioned(
                   top: 30,
                   child: Text(
-                    widget.business.name,
+                    widget.business.appName,
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -192,28 +192,27 @@ class _StoreScreenState extends State<StoreScreen> {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(top: 100.0),
-                  child: Image.asset(
-                    widget.business.logo ?? widget.storeLogo,
-                    height: 200,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 200,
-                        width: 200,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.store,
-                          size: 80,
-                          color: Colors.grey[400],
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                    padding: const EdgeInsets.only(top: 100.0),
+                    child: Image.asset(
+                      widget.business.logo ?? widget.storeLogo,
+                      height: 200,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 200,
+                          width: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.store,
+                            size: 80,
+                            color: Colors.grey[400],
+                          ),
+                        );
+                      },
+                    )),
               ],
             ),
             Expanded(
@@ -247,14 +246,19 @@ class _StoreScreenState extends State<StoreScreen> {
                             _buildActionButton(
                               icon: FontAwesomeIcons.whatsapp,
                               color: Colors.green,
-                              onTap: () {},
+                              onTap: () {
+                                print('WhatsApp: ${widget.business.cellphone}');
+                              },
                             ),
                             const SizedBox(width: 8),
 
                             _buildActionButton(
                               icon: Icons.location_on,
                               color: Colors.blue,
-                              onTap: () {},
+                              onTap: () {
+                                print(
+                                    'Endereço: ${widget.business.address?.fullAddress ?? 'Endereço não disponível'}');
+                              },
                             ),
                             const SizedBox(width: 8),
 
@@ -266,7 +270,7 @@ class _StoreScreenState extends State<StoreScreen> {
                                   MaterialPageRoute(
                                     builder: (context) => ShowReviewScreen(
                                       storeId: widget.business.id.toString(),
-                                      storeName: widget.storeName,
+                                      storeName: widget.business.appName,
                                     ),
                                   ),
                                 );
@@ -314,7 +318,8 @@ class _StoreScreenState extends State<StoreScreen> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Text(
-                        widget.storeDescription,
+                        widget.business.description ??
+                            'Esta loja não forneceu uma descrição.',
                         style: const TextStyle(
                           color: Colors.black,
                           fontSize: 14,

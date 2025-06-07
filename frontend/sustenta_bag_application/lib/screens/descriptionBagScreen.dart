@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/models/nearby_bag.dart';
+import 'package:sustenta_bag_application/models/business.dart'; // Importar BusinessData
 import 'package:sustenta_bag_application/screens/StoreScreen.dart';
 import '../services/cart_service.dart';
 
@@ -67,6 +68,35 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
   void _buyNow() {
     _addToCart();
     Navigator.pushNamed(context, '/bag');
+  }
+
+  BusinessData _convertToBusinessData(Business business) {
+    return BusinessData(
+      id: business.id,
+      legalName: business.legalName,
+      cnpj: '',
+      appName: business.name,
+      cellphone: '',
+      description: null,
+      delivery: false,
+      deliveryTax: null,
+      idAddress: 0,
+      logo: business.logo,
+      status: true,
+      createdAt: DateTime.now().toIso8601String(),
+      updatedAt: null,
+      address: business.address != null
+          ? BusinessDataAddress(
+              id: 0,
+              street: business.address.street,
+              number: business.address.number,
+              city: business.address.city,
+              state: business.address.state,
+              zipCode: business.address.zipCode,
+              complement: null,
+            )
+          : null,
+    );
   }
 
   @override
@@ -154,12 +184,24 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(20),
-                              child: Image.asset(
-                                widget.storeLogo,
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              ),
+                              child: widget.business.logo != null &&
+                                      widget.business.logo!.isNotEmpty
+                                  ? Image.network(
+                                      widget.business.logo!,
+                                      width: 40,
+                                      height: 40,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Image.asset('assets/shop.png',
+                                                  width: 40, height: 40),
+                                    )
+                                  : Image.asset(
+                                      'assets/shop.png',
+                                      width: 40,
+                                      height: 40,
+                                      fit: BoxFit.cover,
+                                    ),
                             ),
                             const SizedBox(width: 12),
                             Text(
@@ -172,18 +214,23 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                             const Spacer(),
                             TextButton(
                               onPressed: () {
+                                final businessData =
+                                    _convertToBusinessData(widget.business);
+
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => StoreScreen(
-                                      id: widget.id,
+                                      id: widget.business.id.toString(),
                                       storeName: widget.business.name,
-                                      storeLogo: widget.storeLogo,
+                                      storeLogo: widget.business.logo ??
+                                          'assets/shop.png',
                                       storeDescription:
-                                          'Sed id faucibus lacus, vitae accumsan turpis. Donec varius neque nec mi consectetur volutpat.',
+                                          'Descrição não disponível.',
                                       rating: 4.8,
                                       workingHours: '18:00 às 23:30',
-                                      business: widget.business,
+                                      business:
+                                          businessData,
                                     ),
                                   ),
                                 );
