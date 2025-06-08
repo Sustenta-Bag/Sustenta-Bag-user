@@ -16,6 +16,7 @@ class FavoriteService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
+        print('Detalhes da empresa $businessId recebidos: $data'); // Log de sucesso
         return BusinessData.fromJson(data);
       } else {
         print(
@@ -28,7 +29,8 @@ class FavoriteService {
     }
   }
 
-  static Future<bool> isFavorite(int businessId, String token) async {
+  static Future<int?> _getFavoriteIdForBusiness(
+      int businessId, String token) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/favorites'),
@@ -37,17 +39,26 @@ class FavoriteService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        return data
-            .any((favoriteItem) => favoriteItem['idBusiness'] == businessId);
+        final favoriteItem = data.firstWhere(
+              (item) => item['idBusiness'] == businessId,
+          orElse: () => null,
+        );
+        if (favoriteItem != null && favoriteItem['idFavorite'] != null) {
+          return favoriteItem['idFavorite'] as int;
+        }
       } else {
         print(
-            'Erro ao verificar favorito: ${response.statusCode} - ${response.body}');
-        return false;
+            'Erro ao buscar ID do favorito para o negócio $businessId: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('Erro ao verificar favorito: $e');
-      return false;
+      print('Erro de rede ao buscar ID do favorito para o negócio $businessId: $e');
     }
+    return null;
+  }
+
+  static Future<bool> isFavorite(int businessId, String token) async {
+    final favoriteId = await _getFavoriteIdForBusiness(businessId, token);
+    return favoriteId != null;
   }
 
   static Future<bool> addFavorite(
@@ -61,6 +72,7 @@ class FavoriteService {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Favorito adicionado com sucesso para businessId: $businessId');
         return true;
       } else {
         print(
@@ -76,19 +88,19 @@ class FavoriteService {
   static Future<bool> removeFavorite(int businessId, String token) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/favorites/$businessId'),
+        Uri.parse('$baseUrl/favorites/business/$businessId'),
         headers: ApiConfig.getHeaders(token),
       );
-
       if (response.statusCode == 200 || response.statusCode == 204) {
+        print('Favorito $businessId removido com sucesso.');
         return true;
       } else {
         print(
-            'Erro ao remover favorito: ${response.statusCode} - ${response.body}');
+            'Erro ao remover favorito $businessId: ${response.statusCode} - ${response.body}');
         return false;
       }
     } catch (e) {
-      print('Erro ao remover favorito: $e');
+      print('Erro ao remover favorito $businessId: $e');
       return false;
     }
   }
@@ -112,7 +124,7 @@ class FavoriteService {
           .toList();
 
       final List<Future<BusinessData?>> fetchFutures =
-          businessIds.map((id) => _fetchBusinessDetails(id, token)).toList();
+      businessIds.map((id) => _fetchBusinessDetails(id, token)).toList();
 
       final List<BusinessData?> results = await Future.wait(fetchFutures);
       return results.whereType<BusinessData>().toList();
@@ -125,11 +137,14 @@ class FavoriteService {
   static Future<bool> toggleFavorite(
       int businessId, int clientId, String token) async {
     try {
-      final isFav = await isFavorite(businessId, token);
+      final int? existingFavoriteId =
+      await _getFavoriteIdForBusiness(businessId, token);
 
-      if (isFav) {
-        return await removeFavorite(businessId, token);
+      if (existingFavoriteId != null) {
+        print('Removendo favorito com idFavorite: $existingFavoriteId para businessId: $businessId');
+        return await removeFavorite(existingFavoriteId, token);
       } else {
+        print('Adicionando favorito para businessId: $businessId e clientId: $clientId');
         return await addFavorite(businessId, clientId, token);
       }
     } catch (e) {
