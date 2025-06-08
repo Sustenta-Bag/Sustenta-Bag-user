@@ -11,7 +11,7 @@ class LocalNotificationService {
   static Future<void> initialize() async {
     // Inicializar fusos horários para notificações agendadas
     tz_data.initializeTimeZones();
-    
+
     // Configurações para Android
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -25,7 +25,8 @@ class LocalNotificationService {
     );
 
     // Inicialização
-    const InitializationSettings initializationSettings = InitializationSettings(
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsIOS,
     );
@@ -39,7 +40,7 @@ class LocalNotificationService {
         }
       },
     );
-    
+
     // Solicitar permissões
     await requestPermissions();
   }
@@ -50,16 +51,8 @@ class LocalNotificationService {
       final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
           _notificationsPlugin.resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
-
       if (androidPlugin != null) {
         await androidPlugin.requestNotificationsPermission();
-        try {
-          await androidPlugin.requestExactAlarmsPermission();
-        } catch (e) {
-          if (kDebugMode) {
-            print('Erro ao solicitar permissão para alarmes exatos: $e');
-          }
-        }
       }
       return true;
     } catch (e) {
@@ -100,15 +93,16 @@ class LocalNotificationService {
       const NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
         iOS: iOSPlatformChannelSpecifics,
-      );      // Usar o timestamp em milissegundos como ID para garantir que não haja colisões
-      final int notificationId = DateTime.now().millisecondsSinceEpoch.remainder(100000);
-      
+      ); // Usar o timestamp em milissegundos como ID para garantir que não haja colisões
+      final int notificationId =
+          DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
       if (kDebugMode) {
         print('Tentando exibir notificação com ID: $notificationId');
         print('Título: "$title"');
         print('Corpo: "$body"');
       }
-      
+
       await _notificationsPlugin.show(
         notificationId,
         title,
@@ -116,7 +110,7 @@ class LocalNotificationService {
         platformChannelSpecifics,
         payload: payload,
       );
-      
+
       if (kDebugMode) {
         print('Notificação local exibida com sucesso: ID=$notificationId');
       }
@@ -126,7 +120,7 @@ class LocalNotificationService {
       }
     }
   }
-  
+
   // Schedule a notification for a future time
   static Future<void> scheduleNotification({
     required int id,
@@ -147,10 +141,11 @@ class LocalNotificationService {
         enableVibration: true,
         icon: '@mipmap/ic_launcher',
       );
-      
+
       const NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
-      );      await _notificationsPlugin.zonedSchedule(
+      );
+      await _notificationsPlugin.zonedSchedule(
         id,
         title,
         body,
@@ -159,7 +154,7 @@ class LocalNotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         payload: payload,
       );
-      
+
       if (kDebugMode) {
         print('Notificação agendada para: ${scheduledDate.toString()}');
       }
