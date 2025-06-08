@@ -58,7 +58,7 @@ class _DeliveryOptionScreenState extends State<DeliveryOptionScreen> {
       }
 
       final client =
-          await ClientService.getClient(userData['id'].toString(), token);
+          await ClientService.getClient(userData['entityId'].toString(), token);
       if (client == null) {
         throw Exception('Dados do cliente não encontrados');
       }
