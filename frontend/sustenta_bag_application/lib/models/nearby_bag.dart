@@ -133,14 +133,10 @@ class NearbyBag {
   String _mapTypeToCategory(String type) {
     switch (type.toLowerCase()) {
       case 'doce':
-      case 'doces':
         return 'Doces';
-      case 'salgado':
-      case 'salgados':
+      case 'salgada':
         return 'Salgados';
       case 'mista':
-      case 'mistas':
-      case 'mixta':
         return 'Mistas';
       default:
         return 'Mistas';
