@@ -81,7 +81,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         final totalHasMore = historyResult['hasMore'] as bool;
 
         final newBusinessCache = Map<int, BusinessData>.from(businessCache);
-        final newOrderReviewStatus = Map<int, Review?>.from(_orderReviewStatus);
+        final newOrderReviewStatus = <int, Review?>{};
 
         for (final order in orders) {
           if (!newBusinessCache.containsKey(order.businessId)) {
@@ -92,26 +92,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
             }
           }
 
-          if (order.status == OrderStatus.delivered.value && order.id != null) {
-            if (!newOrderReviewStatus.containsKey(order.id)) {
-              final review = await ReviewService.getReviewByOrder(
-                  order.id!, userData['id'], token);
-              newOrderReviewStatus[order.id!] = review;
-            }
+          if (order.id != null && _isDeliveredOrder(order.status)) {
+            print(
+                'Verificando review para pedido ${order.id} com status: ${order.status}');
+            final review = await ReviewService.getReviewByOrder(
+                order.id!, userData['id'], token);
+            newOrderReviewStatus[order.id!] = review;
+            print(
+                'Review encontrada: ${review != null ? 'Sim (${review.rating} estrelas)' : 'Não'}');
           }
         }
 
         setState(() {
           activeOrder = activeOrders.isNotEmpty ? activeOrders.first : null;
           orderHistory = orders
-              .where((order) =>
-                  order.status != 'confirmado' &&
-                  order.status != 'preparando' &&
-                  order.status != 'pronto')
+              .where((order) => !_isActiveOrderStatus(order.status))
               .toList();
           businessCache = newBusinessCache;
-          _orderReviewStatus =
-              newOrderReviewStatus;
+          _orderReviewStatus = newOrderReviewStatus;
           hasMore = totalHasMore;
           currentOffset = pageSize;
           isLoading = false;
@@ -145,7 +143,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         userData['id'],
         token,
         limit: pageSize,
-        offset: currentOffset + pageSize,
+        offset: currentOffset,
       );
 
       if (historyResult != null) {
@@ -164,7 +162,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               updatedBusinessCache[order.businessId] = business;
             }
           }
-          if (order.status == OrderStatus.delivered.value && order.id != null) {
+
+          if (order.id != null && _isDeliveredOrder(order.status)) {
             if (!updatedOrderReviewStatus.containsKey(order.id)) {
               final review = await ReviewService.getReviewByOrder(
                   order.id!, userData['id'], token);
@@ -175,16 +174,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
         setState(() {
           final filteredOrders = newOrders
-              .where((order) =>
-                  order.status != 'confirmado' &&
-                  order.status != 'preparando' &&
-                  order.status != 'pronto')
+              .where((order) => !_isActiveOrderStatus(order.status))
               .toList();
 
           orderHistory.addAll(filteredOrders);
           businessCache = updatedBusinessCache;
-          _orderReviewStatus =
-              updatedOrderReviewStatus;
+          _orderReviewStatus = updatedOrderReviewStatus;
           hasMore = newHasMore;
           currentOffset += pageSize;
           isLoadingMore = false;
@@ -199,6 +194,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
         isLoadingMore = false;
       });
     }
+  }
+
+  bool _isDeliveredOrder(String status) {
+    return status.toLowerCase() == 'delivered' ||
+        status.toLowerCase() == 'entregue';
+  }
+
+  bool _isActiveOrderStatus(String status) {
+    final activeStatuses = ['confirmado', 'preparando', 'pronto'];
+    return activeStatuses.contains(status.toLowerCase());
   }
 
   String _formatDate(String isoDate) {
@@ -484,6 +489,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     final hasReview = order.id != null && _orderReviewStatus[order.id!] != null;
     final review = _orderReviewStatus[order.id!];
+    final isDelivered = _isDeliveredOrder(order.status);
+
+    print(
+        'Order ${order.id}: status=${order.status}, isDelivered=$isDelivered, hasReview=$hasReview');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,7 +525,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
               const SizedBox(height: 8),
               const Divider(),
-              if (order.status == OrderStatus.delivered.value) ...[
+
+              if (isDelivered) ...[
                 if (!hasReview)
                   SizedBox(
                     width: double.infinity,
@@ -549,15 +559,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE8514C),
-                        // Cor vermelha do seu tema
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical:
-                              12,
+                          vertical: 12,
                         ),
                       ),
                       child: const Text(
@@ -592,8 +600,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ],
                     ),
                   ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
               ],
+
               if (order.status == 'pendente') ...[
                 Row(
                   children: [
@@ -654,8 +663,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
               ],
+
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(_getOrderDescription(order)),
@@ -666,9 +676,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Text(
                   'Status: ${_getStatusDisplayName(order.status)}',
                   style: TextStyle(
-                    color: order.status == OrderStatus.delivered.value
-                        ? Colors.green
-                        : Colors.red,
+                    color: isDelivered ? Colors.green : Colors.red,
                     fontSize: 12,
                   ),
                 ),

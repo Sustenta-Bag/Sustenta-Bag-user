@@ -3,7 +3,6 @@ import '../../models/review.dart';
 import '../../services/review_service.dart';
 import '../../utils/database_helper.dart';
 
-
 class ReviewScreen extends StatefulWidget {
   final String estabelecimento;
   final String estabelecimentoId;
@@ -22,7 +21,8 @@ class ReviewScreen extends StatefulWidget {
   State<ReviewScreen> createState() => _ReviewScreenState();
 }
 
-class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMixin {
+class _ReviewScreenState extends State<ReviewScreen>
+    with TickerProviderStateMixin {
   int _selectedStars = 0;
   final TextEditingController _controller = TextEditingController();
   final FocusNode _textFocusNode = FocusNode();
@@ -57,7 +57,8 @@ class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMix
   Future<void> _submitReview() async {
     if (_selectedStars == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, selecione uma avaliação em estrelas.')),
+        const SnackBar(
+            content: Text('Por favor, selecione uma avaliação em estrelas.')),
       );
       return;
     }
@@ -89,7 +90,8 @@ class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMix
         print('Falha ao enviar avaliação.');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Erro ao enviar avaliação. Tente novamente.')),
+            const SnackBar(
+                content: Text('Erro ao enviar avaliação. Tente novamente.')),
           );
         }
       }
@@ -97,7 +99,9 @@ class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMix
       print('Erro no envio da avaliação: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro inesperado ao enviar avaliação: ${e.toString()}')),
+          SnackBar(
+              content:
+                  Text('Erro inesperado ao enviar avaliação: ${e.toString()}')),
         );
       }
     } finally {
@@ -113,7 +117,8 @@ class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMix
       builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -243,21 +248,33 @@ class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMix
 
   String _getRatingText(int stars) {
     switch (stars) {
-      case 1: return 'Muito ruim 😞';
-      case 2: return 'Ruim 😕';
-      case 3: return 'Regular 😐';
-      case 4: return 'Bom 😊';
-      case 5: return 'Excelente! 🤩';
-      default: return '';
+      case 1:
+        return 'Muito ruim 😞';
+      case 2:
+        return 'Ruim 😕';
+      case 3:
+        return 'Regular 😐';
+      case 4:
+        return 'Bom 😊';
+      case 5:
+        return 'Excelente! 🤩';
+      default:
+        return '';
     }
   }
 
   Color _getRatingColor(int stars) {
     switch (stars) {
-      case 1: case 2: return Colors.red;
-      case 3: return Colors.orange;
-      case 4: case 5: return Colors.green;
-      default: return Colors.grey;
+      case 1:
+      case 2:
+        return Colors.red;
+      case 3:
+        return Colors.orange;
+      case 4:
+      case 5:
+        return Colors.green;
+      default:
+        return Colors.grey;
     }
   }
 
@@ -317,9 +334,8 @@ class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMix
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
-              backgroundColor: isEnabled
-                  ? const Color(0xFFE8514C)
-                  : Colors.grey[400],
+              backgroundColor:
+                  isEnabled ? const Color(0xFFE8514C) : Colors.grey[400],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -328,20 +344,20 @@ class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMix
             onPressed: isEnabled ? _submitReview : null,
             child: _isLoading
                 ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2,
-              ),
-            )
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
                 : const Text(
-              'Enviar Avaliação',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+                    'Enviar Avaliação',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
           ),
         );
       },
@@ -352,7 +368,6 @@ class _ReviewScreenState extends State<ReviewScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
         title: Text(
           'Avaliar ${widget.estabelecimento}',
           style: const TextStyle(
