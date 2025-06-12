@@ -1,33 +1,13 @@
 import 'package:flutter/material.dart';
-
-class Review {
-  final String id;
-  final String userName;
-  final double rating;
-  final String comment;
-  final DateTime date;
-  final List<String> productNames;
-  final bool isVerified;
-
-  Review({
-    required this.id,
-    required this.userName,
-    required this.rating,
-    required this.comment,
-    required this.date,
-    required this.productNames,
-    this.isVerified = false,
-  });
-}
+import '../../models/review.dart';
+import '../../models/reviews_response.dart';
+import '../../services/review_service.dart';
+import '../../utils/database_helper.dart';
 
 class ReviewStats {
-  final double averageRating;
-  final int totalReviews;
   final Map<int, int> ratingDistribution;
 
   ReviewStats({
-    required this.averageRating,
-    required this.totalReviews,
     required this.ratingDistribution,
   });
 }
@@ -49,115 +29,141 @@ class ShowReviewScreen extends StatefulWidget {
 class _ShowReviewScreenState extends State<ShowReviewScreen> {
   List<Review> reviews = [];
   ReviewStats? stats;
+  double _averageRating = 0.0;
+  int _totalReviews = 0;
+
   bool isLoading = true;
+  bool isPaginating = false;
   String selectedFilter = 'Todas';
+
+  String? _token;
+  final ScrollController _scrollController = ScrollController();
+  int _currentPage = 1;
+  final int _limit = 10;
+  bool _hasMoreReviews = true;
 
   @override
   void initState() {
     super.initState();
-    _loadReviews();
+    _initDataAndLoadReviews();
+    _scrollController.addListener(_onScroll);
   }
 
-  Future<void> _loadReviews() async {
-    setState(() => isLoading = true);
-
-    await Future.delayed(const Duration(seconds: 1));
-
-    reviews = _getMockReviews();
-    stats = _calculateStats(reviews);
-
-    setState(() => isLoading = false);
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
   }
 
-  List<Review> _getMockReviews() {
-    return [
-      Review(
-        id: '1',
-        userName: 'Maria Silva',
-        rating: 5.0,
-        comment: 'Excelente! O hambúrguer estava perfeito e chegou quentinho. O molho especial é incrível!',
-        date: DateTime.now().subtract(const Duration(days: 1)),
-        productNames: ['Sacola Salgada'],
-        isVerified: true,
-      ),
-      Review(
-        id: '2',
-        userName: 'João Santos',
-        rating: 4.0,
-        comment: 'Muito bom! A pizza estava saborosa, mas demorou um pouco para chegar.',
-        date: DateTime.now().subtract(const Duration(days: 2)),
-        productNames: ['Sacola Salgada'],
-        isVerified: false,
-      ),
-      Review(
-        id: '3',
-        userName: 'Ana Costa',
-        rating: 5.0,
-        comment: 'Perfeito! Comida deliciosa e entrega rápida. Recomendo!',
-        date: DateTime.now().subtract(const Duration(days: 3)),
-        productNames: ['Sacola Salgada'],
-        isVerified: true,
-      ),
-      Review(
-        id: '4',
-        userName: 'Pedro Lima',
-        rating: 3.0,
-        comment: 'Razoável. A comida estava ok.',
-        date: DateTime.now().subtract(const Duration(days: 5)),
-        productNames: ['Sacola Salgada'],
-        isVerified: false,
-      ),
-      Review(
-        id: '5',
-        userName: 'Carla Oliveira',
-        rating: 4.5,
-        comment: 'Muito bom! O sushi estava fresco e bem preparado.',
-        date: DateTime.now().subtract(const Duration(days: 7)),
-        productNames: ['Sacola Salgada'],
-        isVerified: true,
-      ),
-    ];
+  Future<void> _initDataAndLoadReviews() async {
+    _token = await DatabaseHelper.instance.getToken();
+    if (_token == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(
+                  'Token de autenticação não encontrado. Faça login novamente.')),
+        );
+      }
+      setState(() => isLoading = false);
+      return;
+    }
+    _loadReviews(clearExisting: true);
   }
 
-  ReviewStats _calculateStats(List<Review> reviews) {
-    if (reviews.isEmpty) {
-      return ReviewStats(
-        averageRating: 0,
-        totalReviews: 0,
-        ratingDistribution: {},
+  Future<void> _loadReviews({bool clearExisting = false}) async {
+    if (_token == null) return;
+
+    if (clearExisting) {
+      setState(() {
+        isLoading = true;
+        _currentPage = 1;
+        _hasMoreReviews = true;
+        reviews.clear();
+        stats = null;
+        _averageRating = 0.0;
+        _totalReviews = 0;
+      });
+    } else {
+      if (isPaginating || !_hasMoreReviews) return;
+      setState(() {
+        isPaginating = true;
+      });
+    }
+
+    try {
+      final ReviewsResponse responseData = await ReviewService.getReviews(
+        token: _token!,
+        idBusiness: widget.storeId,
+        page: _currentPage,
+        limit: _limit,
+        rating: _getRatingValueForApi(selectedFilter),
       );
+
+      if (mounted) {
+        setState(() {
+          reviews.addAll(responseData.reviews);
+          _totalReviews = responseData.total;
+          _averageRating = responseData.avgRating;
+
+          stats = _calculateStatsDistribution(reviews);
+
+          _hasMoreReviews = responseData.reviews.length == _limit;
+          if (!clearExisting) {
+            _currentPage++;
+          }
+        });
+      }
+    } catch (e) {
+      print('Erro ao carregar reviews: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar avaliações: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          isPaginating = false;
+        });
+      }
     }
-
-    double sum = reviews.fold(0, (sum, review) => sum + review.rating);
-    double average = sum / reviews.length;
-
-    Map<int, int> distribution = {};
-    for (int i = 1; i <= 5; i++) {
-      distribution[i] = reviews.where((r) => r.rating.round() == i).length;
-    }
-
-    return ReviewStats(
-      averageRating: average,
-      totalReviews: reviews.length,
-      ratingDistribution: distribution,
-    );
   }
 
-  List<Review> get filteredReviews {
-    switch (selectedFilter) {
-      case '5 estrelas':
-        return reviews.where((r) => r.rating >= 4.5).toList();
-      case '4 estrelas':
-        return reviews.where((r) => r.rating >= 3.5 && r.rating < 4.5).toList();
-      case '3 estrelas':
-        return reviews.where((r) => r.rating >= 2.5 && r.rating < 3.5).toList();
-      case '2 estrelas':
-        return reviews.where((r) => r.rating >= 1.5 && r.rating < 2.5).toList();
-      case '1 estrela':
-        return reviews.where((r) => r.rating < 1.5).toList();
-      default:
-        return reviews;
+  void _onScroll() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      _loadReviews(clearExisting: false);
     }
+  }
+
+  String? _getRatingValueForApi(String filterText) {
+    switch (filterText) {
+      case '5 estrelas':
+        return '5';
+      case '4 estrelas':
+        return '4';
+      case '3 estrelas':
+        return '3';
+      case '2 estrelas':
+        return '2';
+      case '1 estrela':
+        return '1';
+      default:
+        return null;
+    }
+  }
+
+  ReviewStats _calculateStatsDistribution(List<Review> reviews) {
+    Map<int, int> distribution = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+    for (var review in reviews) {
+      if (review.rating >= 1 && review.rating <= 5) {
+        distribution[review.rating] = (distribution[review.rating] ?? 0) + 1;
+      }
+    }
+    return ReviewStats(ratingDistribution: distribution);
   }
 
   @override
@@ -170,41 +176,53 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
         elevation: 1,
       ),
       backgroundColor: Colors.grey[50],
-      body: isLoading
+      body: isLoading && reviews.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-        onRefresh: _loadReviews,
-        child: CustomScrollView(
-          slivers: [
-            // Cabeçalho com estatísticas
-            SliverToBoxAdapter(
-              child: _buildStatsHeader(),
-            ),
+              onRefresh: () => _loadReviews(clearExisting: true),
+              child: CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: _buildStatsHeader(),
+                  ),
+                  SliverToBoxAdapter(
+                    child: _buildFilters(),
+                  ),
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        if (index == reviews.length && isPaginating) {
+                          return const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        if (index >= reviews.length) return null;
 
-            // Filtros
-            SliverToBoxAdapter(
-              child: _buildFilters(),
-            ),
-
-            // Lista de avaliações
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                  final filteredList = filteredReviews;
-                  if (index >= filteredList.length) return null;
-
-                  return _buildReviewCard(filteredList[index]);
-                },
-                childCount: filteredReviews.length,
+                        return _buildReviewCard(reviews[index]);
+                      },
+                      childCount: reviews.length + (isPaginating ? 1 : 0),
+                    ),
+                  ),
+                  if (reviews.isEmpty && !isLoading && !isPaginating)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Text(
+                          selectedFilter == 'Todas'
+                              ? 'Nenhuma avaliação encontrada para esta loja.'
+                              : 'Nenhuma avaliação encontrada com este filtro.',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ),
+                    ),
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 20),
+                  ),
+                ],
               ),
             ),
-
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 20),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -234,17 +252,17 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
               Column(
                 children: [
                   Text(
-                    stats!.averageRating.toStringAsFixed(1),
+                    _averageRating.toStringAsFixed(1),
                     style: const TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                       color: Colors.amber,
                     ),
                   ),
-                  _buildStarRating(stats!.averageRating),
+                  _buildStarRating(_averageRating),
                   const SizedBox(height: 4),
                   Text(
-                    '${stats!.totalReviews} avaliações',
+                    '$_totalReviews avaliações',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 12,
@@ -264,26 +282,28 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
                     children: List.generate(5, (index) {
                       int stars = 5 - index;
                       int count = stats!.ratingDistribution[stars] ?? 0;
-                      double percentage = stats!.totalReviews > 0
-                          ? count / stats!.totalReviews
-                          : 0;
+                      double percentage =
+                          _totalReviews > 0 ? count / _totalReviews : 0;
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
                         child: Row(
                           children: [
                             Text('$stars'),
-                            const Icon(Icons.star, size: 16, color: Colors.amber),
+                            const Icon(Icons.star,
+                                size: 16, color: Colors.amber),
                             const SizedBox(width: 8),
                             Expanded(
                               child: LinearProgressIndicator(
                                 value: percentage,
                                 backgroundColor: Colors.grey[300],
-                                valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
+                                valueColor: const AlwaysStoppedAnimation<Color>(
+                                    Colors.amber),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            Text('$count', style: const TextStyle(fontSize: 12)),
+                            Text('$count',
+                                style: const TextStyle(fontSize: 12)),
                           ],
                         ),
                       );
@@ -299,7 +319,14 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
   }
 
   Widget _buildFilters() {
-    final filters = ['Todas', '5 estrelas', '4 estrelas', '3 estrelas', '2 estrelas', '1 estrela'];
+    final filters = [
+      'Todas',
+      '5 estrelas',
+      '4 estrelas',
+      '3 estrelas',
+      '2 estrelas',
+      '1 estrela'
+    ];
 
     return Container(
       height: 50,
@@ -317,9 +344,12 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
               label: Text(filter),
               selected: isSelected,
               onSelected: (selected) {
-                setState(() {
-                  selectedFilter = filter;
-                });
+                if (selected) {
+                  setState(() {
+                    selectedFilter = filter;
+                    _loadReviews(clearExisting: true);
+                  });
+                }
               },
               backgroundColor: Colors.white,
               selectedColor: Colors.orange.withOpacity(0.2),
@@ -350,7 +380,6 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Cabeçalho do usuário
           Row(
             children: [
               const SizedBox(width: 12),
@@ -361,16 +390,16 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
                     Row(
                       children: [
                         Text(
-                          review.userName,
+                          review.userName ?? 'Usuário Desconhecido',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
-                        ],
+                      ],
                     ),
                     Text(
-                      _formatDate(review.date),
+                      _formatDate(review.date ?? DateTime.now()),
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12,
@@ -379,38 +408,10 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
                   ],
                 ),
               ),
-              _buildStarRating(review.rating),
+              _buildStarRating(review.rating.toDouble()),
             ],
           ),
-
           const SizedBox(height: 12),
-
-          // Produtos avaliados
-          if (review.productNames.isNotEmpty) ...[
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: review.productNames.map((product) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    product,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.amber,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 12),
-          ],
-
           Text(
             review.comment,
             style: const TextStyle(
@@ -431,8 +432,8 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
           index < rating.floor()
               ? Icons.star
               : index < rating
-              ? Icons.star_half
-              : Icons.star_border,
+                  ? Icons.star_half
+                  : Icons.star_border,
           color: Colors.amber,
           size: 16,
         );
@@ -455,4 +456,3 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
     }
   }
 }
-

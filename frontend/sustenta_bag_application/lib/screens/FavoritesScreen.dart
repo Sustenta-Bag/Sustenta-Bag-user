@@ -297,23 +297,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.popUntil(context, ModalRoute.withName('/home'));
-              },
-              icon: const Icon(Icons.explore),
-              label: const Text('Explorar Lojas'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEACF9D),
-                foregroundColor: const Color(0xFF2D2D2D),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                elevation: 4,
-              ),
-            ),
+            const SizedBox(height: 32)
           ],
         ),
       ),
@@ -428,6 +412,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+
             CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFEACF9D)),
             ),
