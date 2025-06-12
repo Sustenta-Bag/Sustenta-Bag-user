@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../utils/api_config.dart';
 import '../models/business.dart';
+import '../utils/database_helper.dart';
 
 class FavoriteService {
   static String get baseUrl => ApiConfig.baseUrl;
@@ -32,8 +33,14 @@ class FavoriteService {
   static Future<int?> _getFavoriteIdForBusiness(
       int businessId, String token) async {
     try {
+      final idClient = await DatabaseHelper.instance.getEntityId();
+      if (idClient == null) {
+        print('Erro: idClient não encontrado no banco local');
+        return null;
+      }
+
       final response = await http.get(
-        Uri.parse('$baseUrl/favorites'),
+        Uri.parse('$baseUrl/favorites?idClient=$idClient'),
         headers: ApiConfig.getHeaders(token),
       );
 
@@ -61,9 +68,14 @@ class FavoriteService {
     return favoriteId != null;
   }
 
-  static Future<bool> addFavorite(
-      int businessId, int idClient, String token) async {
+  static Future<bool> addFavorite(int businessId, String token) async {
     try {
+      final idClient = await DatabaseHelper.instance.getEntityId();
+      if (idClient == null) {
+        print('Erro: idClient não encontrado no banco local');
+        return false;
+      }
+
       final response = await http.post(
         Uri.parse('$baseUrl/favorites'),
         headers: ApiConfig.getHeaders(token)
@@ -104,11 +116,16 @@ class FavoriteService {
       return false;
     }
   }
-
   static Future<List<BusinessData>> getFavorites(String token) async {
     try {
+      final idClient = await DatabaseHelper.instance.getEntityId();
+      if (idClient == null) {
+        print('Erro: idClient não encontrado no banco local');
+        return [];
+      }
+
       final favsResponse = await http.get(
-        Uri.parse('$baseUrl/favorites'),
+        Uri.parse('$baseUrl/favorites?idClient=$idClient'),
         headers: ApiConfig.getHeaders(token),
       );
 
@@ -134,29 +151,32 @@ class FavoriteService {
     }
   }
 
-  static Future<bool> toggleFavorite(
-      int businessId, int clientId, String token) async {
+  static Future<bool> toggleFavorite(int businessId, String token) async {
     try {
-      final int? existingFavoriteId =
-      await _getFavoriteIdForBusiness(businessId, token);
+      final bool isCurrentlyFavorite = await FavoriteService.isFavorite(businessId, token);
 
-      if (existingFavoriteId != null) {
-        print('Removendo favorito com idFavorite: $existingFavoriteId para businessId: $businessId');
-        return await removeFavorite(existingFavoriteId, token);
+      if (isCurrentlyFavorite) {
+        print('Removendo favorito para businessId: $businessId');
+        return await removeFavorite(businessId, token);
       } else {
-        print('Adicionando favorito para businessId: $businessId e clientId: $clientId');
-        return await addFavorite(businessId, clientId, token);
+        print('Adicionando favorito para businessId: $businessId');
+        return await addFavorite(businessId, token);
       }
     } catch (e) {
       print('Erro ao alternar favorito: $e');
       return false;
     }
   }
-
   static Future<int> getFavoritesCount(String token) async {
     try {
+      final idClient = await DatabaseHelper.instance.getEntityId();
+      if (idClient == null) {
+        print('Erro: idClient não encontrado no banco local');
+        return 0;
+      }
+
       final response = await http.get(
-        Uri.parse('$baseUrl/favorites/count'),
+        Uri.parse('$baseUrl/favorites/count?idClient=$idClient'),
         headers: ApiConfig.getHeaders(token),
       );
 

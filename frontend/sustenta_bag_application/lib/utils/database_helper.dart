@@ -63,11 +63,9 @@ class DatabaseHelper {
     ''');
   }
 
-  // User operations
   Future<int> saveUser(Map<String, dynamic> user) async {
     Database db = await database;
 
-    // Delete existing user data
     await db.delete('user');
 
     return await db.insert('user', {
@@ -83,11 +81,9 @@ class DatabaseHelper {
     });
   }
 
-  // Entity operations
   Future<int> saveEntity(Map<String, dynamic> entity) async {
     Database db = await database;
 
-    // Delete existing entity data
     await db.delete('entity');
 
     return await db.insert('entity', {
@@ -107,11 +103,14 @@ class DatabaseHelper {
     return userMap?['id'] as int?;
   }
 
-  // Token operations
+  Future<int?> getEntityId() async {
+    final userMap = await getUser();
+    return userMap?['entityId'] as int?;
+  }
+
   Future<int> saveToken(String token) async {
     Database db = await database;
 
-    // Delete existing tokens
     await db.delete('auth_token');
 
     return await db.insert('auth_token', {'token': token});

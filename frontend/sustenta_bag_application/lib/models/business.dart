@@ -11,7 +11,7 @@ class BusinessData {
   final String? logo;
   final bool status;
   final String createdAt;
-  final int? deliveryTime;
+  final String deliveryTime;
   final String? openingHours;
   final String? updatedAt;
   final BusinessDataAddress? address;
@@ -30,7 +30,7 @@ class BusinessData {
     required this.status,
     required this.createdAt,
     this.updatedAt,
-    this.deliveryTime,
+    required this.deliveryTime,
     this.openingHours,
     this.address,
   });

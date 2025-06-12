@@ -100,7 +100,7 @@ class _StoreScreenState extends State<StoreScreen> {
             await FavoriteService.removeFavorite(widget.business.id, _token!);
       } else {
         success = await FavoriteService.addFavorite(
-            widget.business.id, _userId!, _token!);
+            widget.business.id, _token!);
       }
 
       if (success && mounted) {
