@@ -81,6 +81,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
       delivery: false,
       deliveryTax: null,
       idAddress: 0,
+      deliveryTime: 'Tempo não informado',
       logo: business.logo,
       status: true,
       createdAt: DateTime.now().toIso8601String(),

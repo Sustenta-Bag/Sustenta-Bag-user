@@ -3,8 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:sustenta_bag_application/AppShell.dart' show AppShell;
 import 'package:sustenta_bag_application/screens/Edit/EditStep1.dart';
 import 'package:sustenta_bag_application/screens/Edit/EditStep2.dart';
-import 'package:sustenta_bag_application/screens/ReviewScreen.dart';
-import 'package:sustenta_bag_application/screens/ShowReviewScreen.dart';
+import 'package:sustenta_bag_application/screens/Review/ShowReviewScreen.dart';
 import 'package:sustenta_bag_application/screens/StoreScreen.dart';
 import 'package:sustenta_bag_application/firebase_options.dart';
 import 'package:sustenta_bag_application/screens/UserDataScreen.dart';
@@ -81,13 +80,6 @@ class MyApp extends StatelessWidget {
               builder: (_) => ReviewOrderScreen(
                 subtotal: args['subtotal'] ?? 0.0,
                 deliveryFee: args['deliveryFee'] ?? 0.0,
-              ),
-            );
-          case '/review':
-            return MaterialPageRoute(
-              builder: (_) => ReviewScreen(
-                estabelecimento: args['estabelecimento'] ?? 'Estabelecimento',
-                estabelecimentoId: args['estabelecimentoId'] ?? '',
               ),
             );
           case '/showReviews':

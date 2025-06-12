@@ -11,6 +11,8 @@ class BusinessData {
   final String? logo;
   final bool status;
   final String createdAt;
+  final String deliveryTime;
+  final String? openingHours;
   final String? updatedAt;
   final BusinessDataAddress? address;
 
@@ -28,6 +30,8 @@ class BusinessData {
     required this.status,
     required this.createdAt,
     this.updatedAt,
+    required this.deliveryTime,
+    this.openingHours,
     this.address,
   });
 
@@ -40,12 +44,16 @@ class BusinessData {
       cellphone: json['cellphone'],
       description: json['description'],
       delivery: json['delivery'] ?? false,
-      deliveryTax: json['deliveryTax']?.toDouble(),
-      idAddress: json['idAddress'],
+      deliveryTax: (json['deliveryTax'] != null)
+          ? double.tryParse(json['deliveryTax'].toString())
+          : null,
+      idAddress: json['idAddress'] is int ? json['idAddress'] : 0,
       logo: json['logo'],
-      status: json['status'],
+      status: json['status'] is bool ? json['status'] : false,
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
+      deliveryTime: json['deliveryTime'],
+      openingHours: json['openingHours'],
       address: json['address'] != null
           ? BusinessDataAddress.fromJson(json['address'])
           : null,
@@ -67,6 +75,8 @@ class BusinessData {
       'status': status,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'deliveryTime': deliveryTime,
+      'openingHours': openingHours,
       'address': address?.toJson(),
     };
   }
