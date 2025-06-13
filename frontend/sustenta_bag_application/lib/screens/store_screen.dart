@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sustenta_bag_application/models/business.dart';
 import 'package:sustenta_bag_application/services/favorite_service.dart';
 import '../utils/database_helper.dart';
-import 'Review/ShowReviewScreen.dart';
+import 'Review/show_review_screen.dart';
 
 class StoreScreen extends StatefulWidget {
   final String id;

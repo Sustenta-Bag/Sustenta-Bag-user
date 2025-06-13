@@ -6,7 +6,7 @@ import '../../utils/database_helper.dart';
 import '../../models/order.dart';
 import '../../models/business.dart';
 import '../../models/review.dart';
-import 'Review/ReviewScreen.dart';
+import 'Review/review_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -99,7 +99,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 order.id!, userData['id'], token);
             newOrderReviewStatus[order.id!] = review;
             print(
-                'Review encontrada: ${review != null ? 'Sim (${review.rating} estrelas)' : 'Não'}');
+                'review encontrada: ${review != null ? 'Sim (${review.rating} estrelas)' : 'Não'}');
           }
         }
 
