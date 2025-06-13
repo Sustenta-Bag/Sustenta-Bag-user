@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/services/favorite_service.dart';
 import 'package:sustenta_bag_application/utils/database_helper.dart';
 import 'package:sustenta_bag_application/models/business.dart';
-import 'package:sustenta_bag_application/screens/StoreScreen.dart';
+import 'package:sustenta_bag_application/screens/store_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({Key? key}) : super(key: key);

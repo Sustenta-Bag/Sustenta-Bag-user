@@ -32,7 +32,7 @@ class ReviewService {
           }
         } else {
           print(
-              'DEBUG: Review criada com sucesso (201) mas sem corpo de resposta JSON. Assumindo sucesso.');
+              'DEBUG: review criada com sucesso (201) mas sem corpo de resposta JSON. Assumindo sucesso.');
           return review;
         }
       } else {

@@ -3,7 +3,7 @@ import '../models/address.dart';
 import '../services/address_service.dart';
 import '../services/auth_service.dart';
 import '../utils/database_helper.dart';
-import 'package:sustenta_bag_application/screens/FavoritesScreen.dart';
+import 'package:sustenta_bag_application/screens/favorites_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

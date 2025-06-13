@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'components/navbar.dart';
-import 'screens/homeScreen.dart';
-import 'screens/HistoryScreen.dart';
-import 'screens/bag/BagScreen.dart';
-import 'screens/ProfileScreen.dart';
-import 'services/cart_service.dart';
-import 'utils/database_helper.dart';
+import '../components/navbar.dart';
+import 'home_screen.dart';
+import 'history_screen.dart';
+import 'bag/bag_screen.dart';
+import 'profile_screen.dart';
+import '../services/cart_service.dart';
+import '../utils/database_helper.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({Key? key}) : super(key: key);

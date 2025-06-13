@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/models/nearby_bag.dart';
 import 'package:sustenta_bag_application/models/business.dart'; // Importar BusinessData
-import 'package:sustenta_bag_application/screens/StoreScreen.dart';
+import 'package:sustenta_bag_application/screens/store_screen.dart';
 import '../services/cart_service.dart';
 
 class DescriptionBagScreen extends StatefulWidget {

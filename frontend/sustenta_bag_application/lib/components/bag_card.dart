@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/models/nearby_bag.dart';
-import '../screens/descriptionBagScreen.dart';
+import '../screens/description_bag_screen.dart';
 
 class BagCard extends StatelessWidget {
   final String id;
