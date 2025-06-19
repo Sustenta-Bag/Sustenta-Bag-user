@@ -51,16 +51,20 @@ class AuthService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
-      
+
       if (response.statusCode == 201) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        return data;
+        if (response.body.isNotEmpty) {
+          final Map<String, dynamic> data = jsonDecode(response.body);
+          return data;
+        } else {
+          return {'success': true, 'message': 'Registro realizado com sucesso.'};
+        }
       } else {
         final Map<String, dynamic> errorData = jsonDecode(response.body);
         return {'error': errorData['message'] ?? 'Falha no registro'};
       }
     } catch (e) {
-      return {'error': 'Erro de rede: ${e.toString()}'};
+      return {'error': 'Erro de rede ou resposta inesperada: ${e.toString()}'};
     }
   }
 

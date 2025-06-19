@@ -204,7 +204,6 @@ class _EditUserStep1State extends State<EditUserStep1> {
                       keyboardType: TextInputType.phone,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
-                        TelefoneInputFormatter(),
                       ],
                     ),
                     const SizedBox(height: 40),
