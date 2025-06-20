@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sustenta_bag_application/utils/validators.dart';
+import 'package:sustenta_bag_application/models/client.dart';
+import 'package:sustenta_bag_application/services/auth_service.dart';
 import 'package:sustenta_bag_application/services/client_service.dart';
+import 'package:sustenta_bag_application/utils/validators.dart';
 
 import '../../utils/formatters.dart';
 
@@ -28,7 +30,6 @@ class _EditUserStep1State extends State<EditUserStep1> {
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args != null && args is Map<String, dynamic>) {
       userData = args;
-
 
       _nomeController.text = userData['nome'] ?? '';
       _cpfController.text = _formatCpf(userData['cpf'] ?? '');
@@ -101,11 +102,12 @@ class _EditUserStep1State extends State<EditUserStep1> {
           'phone': _removeFormatting(_telefoneController.text),
         };
 
-
-        final updatedClient =
-            await ClientService.updateClient(id, dadosAtualizados, token);
+        final Client? updatedClient =
+        await ClientService.updateClient(id, dadosAtualizados, token);
 
         if (updatedClient != null) {
+          await AuthService.updateLocalEntityData(updatedClient.toJson());
+
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -161,75 +163,74 @@ class _EditUserStep1State extends State<EditUserStep1> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Spacer(),
-                    _buildTextFormField(
-                      controller: _nomeController,
-                      label: "Nome",
-                      hint: "Seu nome completo",
-                      validator: Validators.validateNome,
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+              _buildTextFormField(
+                controller: _nomeController,
+                label: "Nome",
+                hint: "Seu nome completo",
+                validator: Validators.validateNome,
+              ),
+              const SizedBox(height: 30),
+              _buildTextFormField(
+                controller: _cpfController,
+                label: "CPF",
+                hint: "000.000.000-00",
+                validator: Validators.validateCpf,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CpfInputFormatter(),
+                ],
+                enabled: false,
+              ),
+              const SizedBox(height: 30),
+              _buildTextFormField(
+                controller: _emailController,
+                label: "Email",
+                hint: "email@exemplo.com",
+                validator: Validators.validateEmail,
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 30),
+              _buildTextFormField(
+                controller: _telefoneController,
+                label: "Telefone",
+                hint: "(99) 99999-9999",
+                validator: Validators.validateTelefone,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+              ),
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _salvarAlteracoes,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE8514C),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    const SizedBox(height: 30),
-                    _buildTextFormField(
-                      controller: _cpfController,
-                      label: "CPF",
-                      hint: "000.000.000-00",
-                      validator: Validators.validateCpf,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        CpfInputFormatter(),
-                      ],
-                      enabled: false,
-                    ),
-                    const SizedBox(height: 30),
-                    _buildTextFormField(
-                      controller: _emailController,
-                      label: "Email",
-                      hint: "email@exemplo.com",
-                      validator: Validators.validateEmail,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 30),
-                    _buildTextFormField(
-                      controller: _telefoneController,
-                      label: "Telefone",
-                      hint: "(99) 99999-9999",
-                      validator: Validators.validateTelefone,
-                      keyboardType: TextInputType.phone,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        TelefoneInputFormatter(),
-                      ],
-                    ),
-                    const SizedBox(height: 40),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _salvarAlteracoes,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFE8514C),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          "Salvar Alterações",
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    const Spacer(),
-                  ],
+                  ),
+                  child: const Text(
+                    "Salvar Alterações",
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
                 ),
               ),
-            ),
+              const Spacer(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -280,5 +281,3 @@ class _EditUserStep1State extends State<EditUserStep1> {
     );
   }
 }
-
-

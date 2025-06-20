@@ -4,15 +4,14 @@ import 'package:sustenta_bag_application/screens/app_shell.dart' show AppShell;
 import 'package:sustenta_bag_application/screens/Edit/edit_step1.dart';
 import 'package:sustenta_bag_application/screens/Edit/edit_step2.dart';
 import 'package:sustenta_bag_application/screens/Review/show_review_screen.dart';
+import 'package:sustenta_bag_application/screens/register/register_address_screen.dart';
+import 'package:sustenta_bag_application/screens/register/register_personal_screen.dart';
 import 'package:sustenta_bag_application/screens/store_screen.dart';
 import 'package:sustenta_bag_application/firebase_options.dart';
 import 'package:sustenta_bag_application/screens/user_data_screen.dart';
 import 'package:sustenta_bag_application/services/firebase_messaging_service.dart';
 import 'screens/intro_screen.dart';
 import 'screens/login_screen.dart';
-import 'screens/Register/register_step1.dart';
-import 'screens/Register/register_step2.dart';
-import 'screens/Register/register_step3.dart';
 import 'screens/bag/delivery_options_screen.dart';
 import 'screens/bag/review_order_screen.dart';
 import 'screens/bag/payment_screen.dart';
@@ -57,9 +56,8 @@ class MyApp extends StatelessWidget {
         '/login': (_) => const LoginScreen(),
         '/home': (_) => const AppShell(),
         '/app': (_) => const AppShell(),
-        '/register1': (_) => RegisterStep1(),
-        '/register2': (_) => RegisterStep2(),
-        '/register3': (_) => RegisterStep3(),
+        '/register-personal': (_) => RegisterPersonalScreen(),
+        '/register-address': (_) => RegisterAddressScreen(),
         '/bag/payment': (_) => const PaymentScreen(),
         '/favorites': (_) => FavoritesScreen(),
         '/user_data': (_) => const UserDataScreen(),
