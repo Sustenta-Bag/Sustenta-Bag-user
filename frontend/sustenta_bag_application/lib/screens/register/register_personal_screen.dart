@@ -91,7 +91,6 @@ class _RegisterPersonalScreenState extends State<RegisterPersonalScreen> {
                   inputFormatters: [CpfInputFormatter()],
                 ),
                 const SizedBox(height: 24),
-
                 _buildTextFormField(
                   controller: _telefoneController,
                   label: "Celular",
@@ -105,7 +104,6 @@ class _RegisterPersonalScreenState extends State<RegisterPersonalScreen> {
                   keyboardType: TextInputType.phone,
                   inputFormatters: [_phoneMaskFormatter],
                 ),
-
                 const SizedBox(height: 24),
                 _buildTextFormField(
                   controller: _emailController,

@@ -90,6 +90,13 @@ class AuthService {
     final token = await DatabaseHelper.instance.getToken();
     return token != null;
   }
+
+  static Future<void> updateLocalEntityData(Map<String, dynamic> newEntityData) async {
+    await DatabaseHelper.instance.saveEntity(newEntityData);
+    if (kDebugMode) {
+      print('Dados da entidade local atualizados com sucesso.');
+    }
+  }
   
   static Future<Map<String, dynamic>?> getCurrentUser() async {
     final userJson = await DatabaseHelper.instance.getUser();

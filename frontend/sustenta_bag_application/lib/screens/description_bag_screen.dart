@@ -230,8 +230,7 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                                           'Descrição não disponível.',
                                       rating: 4.8,
                                       workingHours: '18:00 às 23:30',
-                                      business:
-                                          businessData,
+                                      business: businessData,
                                     ),
                                   ),
                                 );

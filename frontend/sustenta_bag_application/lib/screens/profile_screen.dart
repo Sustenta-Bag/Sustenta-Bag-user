@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/address.dart';
-import '../services/address_service.dart';
 import '../services/auth_service.dart';
 import '../utils/database_helper.dart';
-import 'package:sustenta_bag_application/screens/favorites_screen.dart';
+import 'favorites_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,7 +12,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
-  Address? _address;
   String? _token;
   Map<String, dynamic> jsonData = {};
 
@@ -25,9 +22,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserData() async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     try {
       _token = await DatabaseHelper.instance.getToken();
@@ -43,22 +42,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.pushReplacementNamed(context, '/login');
         return;
       }
-      setState(() {
-        jsonData = userData;
-      });
 
-      if (jsonData["entity"] != null &&
-          jsonData["entity"]["idAddress"] is int) {
-        final address = await AddressService.getAddress(
-            jsonData["entity"]["idAddress"].toString(), _token!);
-        if (mounted) {
-          setState(() {
-            _address = address;
-          });
-        }
-      } else {
-        debugPrint(
-            "idAddress não encontrado ou não é um inteiro para carregar o endereço.");
+      if (mounted) {
+        setState(() {
+          jsonData = userData;
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -105,9 +93,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/login');
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao fazer logout: ${e.toString()}')),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao fazer logout: ${e.toString()}')),
+          );
+        }
       }
     }
   }
@@ -116,14 +106,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            const FavoritesScreen(),
+        builder: (context) => const FavoritesScreen(),
       ),
     );
   }
 
   void _goToUserData() {
-    Navigator.pushNamed(context, '/user_data');
+    Navigator.pushNamed(context, '/user_data').then((_) {
+      _loadUserData();
+    });
   }
 
   @override
@@ -133,6 +124,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
+
+    final entity = jsonData['entity'] as Map<String, dynamic>? ?? {};
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -162,7 +155,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       radius: 40,
                       backgroundColor: const Color(0xFFE8514C),
                       child: Text(
-                        (jsonData["entity"]["name"] ?? 'U')[0].toUpperCase(),
+                        (entity["name"] ?? 'U')[0].toUpperCase(),
                         style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
@@ -172,7 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      jsonData["entity"]["name"] ?? 'Usuário',
+                      entity["name"] ?? 'Usuário',
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -182,7 +175,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      jsonData["entity"]["email"] ?? '',
+                      entity["email"] ?? '',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[600],
@@ -301,66 +294,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-}
-Widget _buildSection(String title, List<Widget> children) {
-  return Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(20.0),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.1),
-          spreadRadius: 1,
-          blurRadius: 10,
-          offset: const Offset(0, 3),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...children,
-      ],
-    ),
-  );
-}
-
-Widget _buildInfoRow(String label, String value) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8.0),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 100,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-              color: Colors.black87,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
 }
