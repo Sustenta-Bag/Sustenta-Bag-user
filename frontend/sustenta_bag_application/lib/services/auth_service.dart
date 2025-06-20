@@ -51,16 +51,20 @@ class AuthService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
-      
+
       if (response.statusCode == 201) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        return data;
+        if (response.body.isNotEmpty) {
+          final Map<String, dynamic> data = jsonDecode(response.body);
+          return data;
+        } else {
+          return {'success': true, 'message': 'Registro realizado com sucesso.'};
+        }
       } else {
         final Map<String, dynamic> errorData = jsonDecode(response.body);
         return {'error': errorData['message'] ?? 'Falha no registro'};
       }
     } catch (e) {
-      return {'error': 'Erro de rede: ${e.toString()}'};
+      return {'error': 'Erro de rede ou resposta inesperada: ${e.toString()}'};
     }
   }
 
@@ -85,6 +89,13 @@ class AuthService {
   static Future<bool> isLoggedIn() async {
     final token = await DatabaseHelper.instance.getToken();
     return token != null;
+  }
+
+  static Future<void> updateLocalEntityData(Map<String, dynamic> newEntityData) async {
+    await DatabaseHelper.instance.saveEntity(newEntityData);
+    if (kDebugMode) {
+      print('Dados da entidade local atualizados com sucesso.');
+    }
   }
   
   static Future<Map<String, dynamic>?> getCurrentUser() async {

@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Text("Não possui uma conta? "),
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, '/register1');
+                    Navigator.pushNamed(context, '/register-personal');
                   },
                   child: const Text(
                     "Inscreva-se",
