@@ -14,8 +14,11 @@ class BagService {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => Bag.fromJson(json)).toList();
+        final Map<String, dynamic> apiResponse = jsonDecode(response.body);
+
+        final List<dynamic> bagData = apiResponse['data'] as List<dynamic>;
+
+        return bagData.map((json) => Bag.fromJson(json)).toList();
       }
       return [];
     } catch (e) {
@@ -42,7 +45,8 @@ class BagService {
     }
   }
 
-  static Future<List<Bag>> getBagsByBusiness(String businessId, String token) async {
+  static Future<List<Bag>> getBagsByBusiness(
+      String businessId, String token) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/bags/business/$businessId'),
@@ -60,7 +64,8 @@ class BagService {
     }
   }
 
-  static Future<List<Bag>> getActiveBagsByBusiness(String businessId, String token) async {
+  static Future<List<Bag>> getActiveBagsByBusiness(
+      String businessId, String token) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/bags/business/$businessId/active'),
@@ -77,4 +82,4 @@ class BagService {
       return [];
     }
   }
-} 
+}

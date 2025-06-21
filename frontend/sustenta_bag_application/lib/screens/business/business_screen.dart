@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sustenta_bag_application/models/business.dart';
 import 'package:sustenta_bag_application/services/favorite_service.dart';
-import '../utils/database_helper.dart';
-import 'Review/show_review_screen.dart';
+import '../../config/api_config.dart';
+import '../../utils/database_helper.dart';
+import '../Review/show_review_screen.dart';
 
 class StoreScreen extends StatefulWidget {
   final String id;
@@ -99,8 +100,8 @@ class _StoreScreenState extends State<StoreScreen> {
         success =
             await FavoriteService.removeFavorite(widget.business.id, _token!);
       } else {
-        success = await FavoriteService.addFavorite(
-            widget.business.id, _token!);
+        success =
+            await FavoriteService.addFavorite(widget.business.id, _token!);
       }
 
       if (success && mounted) {
@@ -165,55 +166,64 @@ class _StoreScreenState extends State<StoreScreen> {
                 ],
               ),
             ),
-            Stack(
-              alignment: Alignment.center,
-              clipBehavior: Clip.none,
-              children: [
-                Positioned(
-                  top: -40,
-                  left: -MediaQuery.of(context).size.width * 0.15,
-                  right: -MediaQuery.of(context).size.width * 0.15,
-                  child: Image.asset(
-                    'assets/detail.png',
-                    width: MediaQuery.of(context).size.width * 1.4,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                Positioned(
-                  top: 30,
-                  child: Text(
-                    widget.business.appName,
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                Padding(
-                    padding: const EdgeInsets.only(top: 100.0),
+            Container(
+              height: 280,
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    top: -60,
+                    left: -MediaQuery.of(context).size.width * 0.15,
+                    right: -MediaQuery.of(context).size.width * 0.15,
                     child: Image.asset(
-                      widget.business.logo ?? widget.storeLogo,
-                      height: 200,
+                      'assets/detail.png',
+                      width: MediaQuery.of(context).size.width * 2.0,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 200,
-                          width: 200,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.store,
-                            size: 80,
-                            color: Colors.grey[400],
-                          ),
-                        );
-                      },
-                    )),
-              ],
+                    ),
+                  ),
+                  Positioned(
+                    top: 30,
+                    child: Text(
+                      widget.business.appName,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Positioned(
+                    top: 100,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20.0),
+                      child: (widget.business.logo != null &&
+                              widget.business.logo!.isNotEmpty)
+                          ? Image.network(
+                              '${ApiConfig.monolitoStaticUrl}${widget.business.logo}',
+                              width: 205,
+                              height: 205,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  'assets/shop.png',
+                                  width: 205,
+                                  height: 205,
+                                  fit: BoxFit.cover,
+                                );
+                              },
+                            )
+                          : Image.asset(
+                              'assets/shop.png',
+                              width: 205,
+                              height: 205,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             Expanded(
               child: Container(
