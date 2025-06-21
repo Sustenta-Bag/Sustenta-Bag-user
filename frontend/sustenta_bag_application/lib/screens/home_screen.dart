@@ -3,6 +3,7 @@ import '../components/bag_card.dart';
 import '../services/firebase_messaging_service.dart';
 import '../services/location_service.dart';
 import '../utils/database_helper.dart';
+import 'business/business_search_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -90,35 +91,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
+          // IconButton(
+          //   icon: const Icon(Icons.notifications_none, color: Colors.black),
+          //   onPressed: () async {
+          //     ScaffoldMessenger.of(context).showSnackBar(
+          //       const SnackBar(
+          //         content: Text('Configurando notificações...'),
+          //         duration: Duration(seconds: 1),
+          //       ),
+          //     );
+          //
+          //     final success =
+          //         await FirebaseMessagingService.sendFCMTokenToServer();
+          //
+          //     if (success) {
+          //       ScaffoldMessenger.of(context).showSnackBar(
+          //         const SnackBar(
+          //           content: Text('Notificações configuradas com sucesso!'),
+          //           backgroundColor: Colors.green,
+          //         ),
+          //       );
+          //     } else {
+          //       ScaffoldMessenger.of(context).showSnackBar(
+          //         const SnackBar(
+          //           content: Text(
+          //               'Falha ao configurar notificações. Tente novamente.'),
+          //           backgroundColor: Colors.red,
+          //         ),
+          //       );
+          //     }
+          //   },
+          // ),
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black),
-            onPressed: () async {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Configurando notificações...'),
-                  duration: Duration(seconds: 1),
+            icon: const Icon(Icons.storefront, color: Colors.black),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BusinessSearchScreen(),
                 ),
               );
-
-              final success =
-                  await FirebaseMessagingService.sendFCMTokenToServer();
-
-              if (success) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Notificações configuradas com sucesso!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        'Falha ao configurar notificações. Tente novamente.'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
             },
           ),
         ],
@@ -183,20 +195,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ],
                 ),
-              const SizedBox(height: 20),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Pesquisar',
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
               const SizedBox(height: 20),
               const Text(
                 'Categorias Populares',
