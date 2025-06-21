@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/services/favorite_service.dart';
 import 'package:sustenta_bag_application/utils/database_helper.dart';
 import 'package:sustenta_bag_application/models/business.dart';
-import 'package:sustenta_bag_application/screens/store_screen.dart';
+import 'package:sustenta_bag_application/screens/business/business_screen.dart';
+import '../config/api_config.dart';
+import 'business/business_search_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
   const FavoritesScreen({Key? key}) : super(key: key);
@@ -81,120 +83,83 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () async {
-            await Navigator.push(
+          onTap: () {
+            Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => StoreScreen(
                   id: business.id.toString(),
                   storeName: business.appName,
                   storeLogo: business.logo ?? 'assets/shop.png',
-                  storeDescription: business.description ?? 'Não há descrição para esta loja.',
+                  storeDescription: business.description ??
+                      'Não há descrição para esta loja.',
                   rating: 0.0,
                   workingHours: 'Horário não disponível',
                   business: business,
                 ),
               ),
             );
-            _onFavoritesChanged();
           },
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Logo da loja
-                Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
+                SizedBox(
+                  width: 60,
+                  height: 60,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: business.logo != null && business.logo!.isNotEmpty
+                    child: (business.logo != null && business.logo!.isNotEmpty)
                         ? Image.network(
-                      business.logo!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          _buildFallbackLogo(),
-                    )
-                        : _buildFallbackLogo(),
+                            '${ApiConfig.monolitoStaticUrl}${business.logo}',
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.broken_image,
+                                    color: Colors.grey),
+                              );
+                            },
+                          )
+                        : Image.asset(
+                            'assets/shop.png',
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
                 const SizedBox(width: 16),
-
-                // Informações da loja
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Nome da loja
                       Text(
                         business.appName,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2D2D2D),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-
                       Text(
-                        business.description ?? 'Sem descrição disponível',
+                        business.description ?? 'Sem descrição',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[700],
-                          height: 1.3,
+                          color: Colors.grey[600],
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 8),
-
-                      Row(
-                        children: [
-                          if (business.delivery == true) ...[
-                            _buildInfoChip(
-                              icon: Icons.delivery_dining,
-                              label: 'Delivery',
-                              color: Colors.green,
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          if (business.deliveryTax != null)
-                            _buildInfoChip(
-                              icon: Icons.local_shipping,
-                              label: 'R\$ ${business.deliveryTax!.toStringAsFixed(2)}',
-                              color: Colors.blue,
-                            ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
-
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.favorite,
-                    color: Colors.red,
-                    size: 24,
-                  ),
-                ),
+                const Icon(Icons.chevron_right, color: Colors.grey),
               ],
             ),
           ),
@@ -297,7 +262,32 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 height: 1.4,
               ),
             ),
-            const SizedBox(height: 32)
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const BusinessSearchScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.search),
+              label: const Text('Encontrar Estabelecimentos'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEACF9D).withOpacity(0.3),
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -342,7 +332,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(25),
                 ),
@@ -409,39 +400,39 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       ),
       body: _isLoading
           ? const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFEACF9D)),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Carregando favoritos...',
-              style: TextStyle(
-                color: Color(0xFF666666),
-                fontSize: 16,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFFEACF9D)),
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    'Carregando favoritos...',
+                    style: TextStyle(
+                      color: Color(0xFF666666),
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      )
+            )
           : _errorMessage != null
-          ? _buildErrorState()
-          : _favorites.isEmpty
-          ? _buildEmptyState()
-          : RefreshIndicator(
-        onRefresh: _loadFavorites,
-        color: const Color(0xFFEACF9D),
-        child: ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          itemCount: _favorites.length,
-          itemBuilder: (context, index) {
-            return _buildFavoriteCard(_favorites[index]);
-          },
-        ),
-      ),
+              ? _buildErrorState()
+              : _favorites.isEmpty
+                  ? _buildEmptyState()
+                  : RefreshIndicator(
+                      onRefresh: _loadFavorites,
+                      color: const Color(0xFFEACF9D),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: _favorites.length,
+                        itemBuilder: (context, index) {
+                          return _buildFavoriteCard(_favorites[index]);
+                        },
+                      ),
+                    ),
     );
   }
 }
