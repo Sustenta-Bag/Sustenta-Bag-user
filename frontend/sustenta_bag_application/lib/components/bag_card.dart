@@ -10,7 +10,7 @@ class BagCard extends StatelessWidget {
   final double price;
   final String category;
   final Business business;
-
+  final List<String> tags;
   const BagCard({
     super.key,
     required this.id,
@@ -20,6 +20,7 @@ class BagCard extends StatelessWidget {
     required this.price,
     required this.category,
     required this.business,
+    required this.tags,
   });
 
   @override
@@ -39,76 +40,154 @@ class BagCard extends StatelessWidget {
               storeLogo: 'assets/mcd.png',
               storeName: business.name,
               business: business,
+              tags: tags,
             ),
           ),
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.orange),
-          borderRadius: BorderRadius.circular(15),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Center(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  imagePath,
-                  width: double.infinity,
-                  height: 140,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              description,
-              style: const TextStyle(fontSize: 13, color: Colors.grey),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Stack(
               children: [
-                Expanded(
-                  child: Text(
-                    "R\$${price.toStringAsFixed(2)}",
-                    style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.bold),
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  child: Image.asset(
+                    imagePath,
+                    width: double.infinity,
+                    height: 140,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                SizedBox(
-                  width: 32,
-                  height: 32,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: EdgeInsets.zero,
+                // Badge da categoria
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
                     ),
-                    child: const Icon(
-                      Icons.add,
-                      size: 18,
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      category,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 30,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.3),
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ],
+            ),
+
+            // Conteúdo do card
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Título
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF2D3748),
+                      height: 1.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // Descrição
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey[600],
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Linha divisória sutil
+                  Container(
+                    height: 1,
+                    color: Colors.grey.withOpacity(0.1),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          "R\$ ${price.toStringAsFixed(2)}",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),

@@ -5,7 +5,7 @@ class Bag {
   final double price;
   final int status;
   final int idBusiness;
-  final String? imageUrl;
+  final List<String> tags;
 
   Bag({
     required this.id,
@@ -14,30 +14,30 @@ class Bag {
     required this.price,
     required this.status,
     required this.idBusiness,
-    this.imageUrl,
+    required this.tags,
   });
 
   factory Bag.fromJson(Map<String, dynamic> json) {
     return Bag(
       id: json['id'],
-      name: json['name'],
+      name: json['type'],
       description: json['description'],
       price: json['price'].toDouble(),
       status: json['status'],
       idBusiness: json['idBusiness'],
-      imageUrl: json['imageUrl'],
+      tags: json['tags'] != null ? List<String>.from(json['tags']) : [],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
+      'type': name,
       'description': description,
       'price': price,
       'status': status,
       'idBusiness': idBusiness,
-      'imageUrl': imageUrl,
+      'tags': tags,
     };
   }
-} 
+}

@@ -13,7 +13,7 @@ class BusinessService {
       var uri = Uri.parse('$baseUrl/businesses');
 
       if (query != null && query.isNotEmpty) {
-        uri = uri.replace(queryParameters: {'name': query});
+        uri = uri.replace(queryParameters: {'appName': query});
       }
 
       final response = await http.get(
@@ -36,7 +36,6 @@ class BusinessService {
     }
   }
 
-  // MÉTODO CORRIGIDO para entender a nova estrutura da API
   static Future<List<BusinessData>> getAllBusinesses(String token) async {
     try {
       final response = await http.get(
