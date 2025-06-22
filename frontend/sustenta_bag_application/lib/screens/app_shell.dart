@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../components/navbar.dart';
+import 'cart/bag_screen.dart';
 import 'home_screen.dart';
 import 'history_screen.dart';
-import 'bag/bag_screen.dart';
 import 'profile_screen.dart';
 import '../services/cart_service.dart';
 import '../utils/database_helper.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/models/nearby_bag.dart';
-import 'package:sustenta_bag_application/models/business.dart'; // Importar BusinessData
+import 'package:sustenta_bag_application/models/business.dart';
 import 'package:sustenta_bag_application/screens/business/business_screen.dart';
 import '../../services/cart_service.dart';
 
@@ -257,20 +257,6 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                         ),
                       ),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Atenção! Contém leite e derivados.',
-                          style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
-                        ),
-                      ),
-                    ),
                     Expanded(
                       child: Container(),
                     ),
@@ -316,26 +302,6 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 12),
-                              ),
-                              onPressed: _buyNow,
-                              child: Text(
-                                'Comprar R\$${widget.price.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
