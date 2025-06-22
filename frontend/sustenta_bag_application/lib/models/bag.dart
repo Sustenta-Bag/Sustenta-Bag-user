@@ -6,7 +6,6 @@ class Bag {
   final int status;
   final int idBusiness;
   final List<String> tags;
-  final DateTime createdAt;
 
   Bag({
     required this.id,
@@ -16,7 +15,6 @@ class Bag {
     required this.status,
     required this.idBusiness,
     required this.tags,
-    required this.createdAt,
   });
 
   factory Bag.fromJson(Map<String, dynamic> json) {
@@ -27,8 +25,7 @@ class Bag {
       price: json['price'].toDouble(),
       status: json['status'],
       idBusiness: json['idBusiness'],
-      tags: List<String>.from(json['tags'] ?? []),
-      createdAt: DateTime.parse(json['createdAt']),
+      tags: json['tags'] != null ? List<String>.from(json['tags']) : [],
     );
   }
 
@@ -41,7 +38,6 @@ class Bag {
       'status': status,
       'idBusiness': idBusiness,
       'tags': tags,
-      'createdAt': createdAt.toIso8601String(),
     };
   }
 }

@@ -10,7 +10,7 @@ class BagCard extends StatelessWidget {
   final double price;
   final String category;
   final Business business;
-
+  final List<String> tags;
   const BagCard({
     super.key,
     required this.id,
@@ -20,6 +20,7 @@ class BagCard extends StatelessWidget {
     required this.price,
     required this.category,
     required this.business,
+    required this.tags,
   });
 
   @override
@@ -39,6 +40,7 @@ class BagCard extends StatelessWidget {
               storeLogo: 'assets/mcd.png',
               storeName: business.name,
               business: business,
+              tags: tags,
             ),
           ),
         );
@@ -59,7 +61,6 @@ class BagCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Container da imagem com categoria
             Stack(
               children: [
                 ClipRRect(
@@ -97,7 +98,6 @@ class BagCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Gradiente sutil na parte inferior da imagem
                 Positioned(
                   bottom: 0,
                   left: 0,
@@ -162,7 +162,6 @@ class BagCard extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // Preço e nome do estabelecimento
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.end,

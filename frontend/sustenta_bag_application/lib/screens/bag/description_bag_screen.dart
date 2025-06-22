@@ -14,6 +14,7 @@ class DescriptionBagScreen extends StatefulWidget {
   final String storeName;
   final String storeLogo;
   final Business business;
+  final List<String> tags;
 
   const DescriptionBagScreen({
     super.key,
@@ -26,6 +27,7 @@ class DescriptionBagScreen extends StatefulWidget {
     required this.storeName,
     required this.storeLogo,
     required this.business,
+    required this.tags,
   });
 
   @override
@@ -34,6 +36,11 @@ class DescriptionBagScreen extends StatefulWidget {
 
 class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
   final CartService _cartService = CartService();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void _addToCart() {
     try {
@@ -255,6 +262,36 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                           color: Colors.black,
                           fontSize: 14,
                         ),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (widget.tags.isNotEmpty)
+                            Wrap(
+                              spacing: 8.0,
+                              runSpacing: 4.0,
+                              children: widget.tags
+                                  .map((tag) => Chip(
+                                        label: Text(tag),
+                                        backgroundColor:
+                                            Colors.orange.withOpacity(0.1),
+                                        labelStyle: const TextStyle(
+                                            color: Colors.orange,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600),
+                                        side: BorderSide.none,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0, vertical: 4.0),
+                                      ))
+                                  .toList(),
+                            ),
+                          const SizedBox(height: 16),
+                        ],
                       ),
                     ),
                     Expanded(
