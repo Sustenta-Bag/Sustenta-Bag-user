@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/models/business.dart';
 import 'package:sustenta_bag_application/screens/business/business_screen.dart';
@@ -22,6 +23,7 @@ class _BusinessSearchScreenState extends State<BusinessSearchScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   bool _isSearching = false;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -38,6 +40,7 @@ class _BusinessSearchScreenState extends State<BusinessSearchScreen>
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _animationController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -223,8 +226,16 @@ class _BusinessSearchScreenState extends State<BusinessSearchScreen>
               ),
               onChanged: (value) {
                 setState(() {});
+
+                if (_debounce?.isActive ?? false) _debounce?.cancel();
+
+                // Cria um novo timer
+                _debounce = Timer(const Duration(milliseconds: 500), () {
+                  _fetchBusinesses(query: value);
+                });
               },
               onSubmitted: (value) {
+                if (_debounce?.isActive ?? false) _debounce?.cancel();
                 _fetchBusinesses(query: value);
               },
             ),

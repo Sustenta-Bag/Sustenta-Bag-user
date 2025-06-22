@@ -56,10 +56,10 @@ class Order {
   Map<String, dynamic> toCreatePayload() {
     return {
       'userId': userId,
-      'businessId': businessId,
+      'idBusiness': businessId,
       'items': items
           .map((item) => {
-                'bagId': item.bagId,
+                'idBag': item.bagId,
                 'quantity': item.quantity,
               })
           .toList(),
@@ -87,6 +87,7 @@ class OrderItem {
     this.bagName,
     this.bagDescription,
   });
+
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     double priceValue = 0.0;
     if (json['price'] != null) {
