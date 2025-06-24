@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../components/bag_card.dart';
+import '../models/nearby_bag.dart';
 import '../services/location_service.dart';
 import '../utils/database_helper.dart';
 import 'business/business_search_screen.dart';
@@ -297,16 +298,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     mainAxisSpacing: 10,
                   ),
                   itemBuilder: (_, index) {
-                    final bag = filteredBags[index];
+                    final bagData = filteredBags[index];
+
+                    final Business business = bagData['business'];
+
+                    final List<String> tags =
+                        List<String>.from(bagData['tags'] ?? []);
+
                     return BagCard(
-                      id: bag['id'],
-                      imagePath: bag['imagePath'],
-                      description: bag['description'],
-                      title: bag['title'],
-                      price: bag['price'],
-                      category: bag['category'],
-                      business: bag['business'],
-                      tags: bag['tags'] ?? [],
+                      id: bagData['id'],
+                      imagePath: bagData['imagePath'],
+                      description: bagData['description'],
+                      title: bagData['title'],
+                      price: bagData['price'],
+                      category: bagData['category'],
+                      business: business,
+                      tags: tags,
                     );
                   },
                 ),
