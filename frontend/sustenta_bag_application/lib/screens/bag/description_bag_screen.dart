@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/models/nearby_bag.dart';
 import 'package:sustenta_bag_application/models/business.dart';
 import 'package:sustenta_bag_application/screens/business/business_screen.dart';
+import '../../models/allergen_tag.dart';
 import '../../services/cart_service.dart';
 
 class DescriptionBagScreen extends StatefulWidget {
@@ -264,7 +265,6 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                         ),
                       ),
                     ),
-
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16.0, vertical: 12.0),
@@ -272,25 +272,57 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (widget.tags.isNotEmpty)
-                            Wrap(
-                              spacing: 8.0,
-                              runSpacing: 4.0,
-                              children: widget.tags
-                                  .map((tag) => Chip(
-                                        label: Text(tag),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0, vertical: 12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Informações sobre Alergênicos',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF4A5568)),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8.0,
+                                    runSpacing: 8.0,
+                                    children: widget.tags.map((apiTag) {
+                                      final AllergenTag tag =
+                                          AllergenTagExtension.fromString(
+                                              apiTag);
+
+                                      if (tag == AllergenTag.unknown) {
+                                        return const SizedBox
+                                            .shrink();
+                                      }
+                                      return Chip(
+                                        avatar: Icon(
+                                          tag.icon,
+                                          size: 18,
+                                          color: Colors.orange[800],
+                                        ),
+                                        label: Text(
+                                          tag.displayName,
+                                          style: TextStyle(
+                                            color: Colors.orange[900],
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
                                         backgroundColor:
-                                            Colors.orange.withOpacity(0.1),
-                                        labelStyle: const TextStyle(
-                                            color: Colors.orange,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600),
+                                            Colors.orange.withOpacity(0.15),
                                         side: BorderSide.none,
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 8.0, vertical: 4.0),
-                                      ))
-                                  .toList(),
+                                            horizontal: 10.0, vertical: 8.0),
+                                      );
+                                    }).toList(),
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                              ),
                             ),
-                          const SizedBox(height: 16),
                         ],
                       ),
                     ),

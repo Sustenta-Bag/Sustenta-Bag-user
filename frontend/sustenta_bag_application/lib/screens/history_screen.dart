@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/order_service.dart';
 import '../../services/business_service.dart';
-import '../../services/review_service.dart';
 import '../../utils/database_helper.dart';
 import '../../models/order.dart';
 import '../../models/business.dart';
-import '../../models/review.dart';
 import 'Review/review_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -19,19 +17,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool isLoading = true;
   bool isLoadingMore = false;
   String? errorMessage;
+
   List<Order> orderHistory = [];
   Order? activeOrder;
+
   Map<int, BusinessData> businessCache = {};
-  Map<int, Review?> _orderReviewStatus = {};
+
   bool hasMore = true;
-  int currentOffset = 0;
+  int currentPage = 1;
   final int pageSize = 10;
   final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _loadOrderHistory();
+    _loadOrderHistory(isRefresh: true);
     _scrollController.addListener(_onScroll);
   }
 
@@ -45,74 +45,65 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent * 0.8) {
       if (!isLoadingMore && hasMore) {
-        _loadMoreHistory();
+        _loadOrderHistory(isRefresh: false);
       }
     }
   }
 
-  Future<void> _loadOrderHistory() async {
+  Future<void> _loadOrderHistory({bool isRefresh = false}) async {
+    if (isLoadingMore || (!hasMore && !isRefresh)) return;
+
     setState(() {
-      isLoading = true;
-      errorMessage = null;
+      if (isRefresh) {
+        isLoading = true;
+        errorMessage = null;
+        currentPage = 1;
+      } else {
+        isLoadingMore = true;
+      }
     });
 
     try {
       final token = await DatabaseHelper.instance.getToken();
-      if (token == null) {
+      if (token == null)
         throw Exception('Token de autenticação não encontrado');
-      }
 
-      final userData = await DatabaseHelper.instance.getUser();
-      if (userData == null) {
-        throw Exception('Dados do usuário não encontrados');
-      }
+      final response = await OrderService.getOrderHistory(token,
+          page: currentPage, limit: pageSize);
 
-      final activeOrders =
-          await OrderService.getActiveOrdersByUser(userData['id'], token);
-      final historyResult = await OrderService.getOrderHistoryByUser(
-        userData['id'],
-        token,
-        limit: pageSize,
-        offset: 0,
-      );
+      if (response != null) {
+        final newOrders = response.orders;
 
-      if (historyResult != null) {
-        final orders = historyResult['orders'] as List<Order>;
-        final totalHasMore = historyResult['hasMore'] as bool;
-
-        final newBusinessCache = Map<int, BusinessData>.from(businessCache);
-        final newOrderReviewStatus = <int, Review?>{};
-
-        for (final order in orders) {
-          if (!newBusinessCache.containsKey(order.businessId)) {
+        for (final order in newOrders) {
+          if (!businessCache.containsKey(order.idBusiness)) {
             final business =
-                await BusinessService.getBusiness(order.businessId, token);
+                await BusinessService.getBusiness(order.idBusiness, token);
             if (business != null) {
-              newBusinessCache[order.businessId] = business;
+              businessCache[order.idBusiness] = business;
             }
-          }
-
-          if (order.id != null && _isDeliveredOrder(order.status)) {
-            print(
-                'Verificando review para pedido ${order.id} com status: ${order.status}');
-            final review = await ReviewService.getReviewByOrder(
-                order.id!, userData['id'], token);
-            newOrderReviewStatus[order.id!] = review;
-            print(
-                'review encontrada: ${review != null ? 'Sim (${review.rating} estrelas)' : 'Não'}');
           }
         }
 
         setState(() {
-          activeOrder = activeOrders.isNotEmpty ? activeOrders.first : null;
-          orderHistory = orders
-              .where((order) => !_isActiveOrderStatus(order.status))
-              .toList();
-          businessCache = newBusinessCache;
-          _orderReviewStatus = newOrderReviewStatus;
-          hasMore = totalHasMore;
-          currentOffset = pageSize;
-          isLoading = false;
+          if (isRefresh) {
+            orderHistory.clear();
+            activeOrder = null;
+          }
+
+          for (final order in newOrders) {
+            if (_isActiveOrderStatus(order.status)) {
+              if (activeOrder == null) {
+                activeOrder = order;
+              }
+            } else {
+              orderHistory.add(order);
+            }
+          }
+
+          hasMore = response.hasMore;
+          if (hasMore) {
+            currentPage++;
+          }
         });
       } else {
         throw Exception('Erro ao carregar histórico');
@@ -120,90 +111,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
     } catch (e) {
       setState(() {
         errorMessage = e.toString();
-        isLoading = false;
       });
-    }
-  }
-
-  Future<void> _loadMoreHistory() async {
-    if (isLoadingMore || !hasMore) return;
-
-    setState(() {
-      isLoadingMore = true;
-    });
-
-    try {
-      final token = await DatabaseHelper.instance.getToken();
-      if (token == null) return;
-
-      final userData = await DatabaseHelper.instance.getUser();
-      if (userData == null) return;
-
-      final historyResult = await OrderService.getOrderHistoryByUser(
-        userData['id'],
-        token,
-        limit: pageSize,
-        offset: currentOffset,
-      );
-
-      if (historyResult != null) {
-        final newOrders = historyResult['orders'] as List<Order>;
-        final newHasMore = historyResult['hasMore'] as bool;
-
-        final updatedBusinessCache = Map<int, BusinessData>.from(businessCache);
-        final updatedOrderReviewStatus =
-            Map<int, Review?>.from(_orderReviewStatus);
-
-        for (final order in newOrders) {
-          if (!updatedBusinessCache.containsKey(order.businessId)) {
-            final business =
-                await BusinessService.getBusiness(order.businessId, token);
-            if (business != null) {
-              updatedBusinessCache[order.businessId] = business;
-            }
-          }
-
-          if (order.id != null && _isDeliveredOrder(order.status)) {
-            if (!updatedOrderReviewStatus.containsKey(order.id)) {
-              final review = await ReviewService.getReviewByOrder(
-                  order.id!, userData['id'], token);
-              updatedOrderReviewStatus[order.id!] = review;
-            }
-          }
-        }
-
-        setState(() {
-          final filteredOrders = newOrders
-              .where((order) => !_isActiveOrderStatus(order.status))
-              .toList();
-
-          orderHistory.addAll(filteredOrders);
-          businessCache = updatedBusinessCache;
-          _orderReviewStatus = updatedOrderReviewStatus;
-          hasMore = newHasMore;
-          currentOffset += pageSize;
-          isLoadingMore = false;
-        });
-      } else {
-        setState(() {
-          isLoadingMore = false;
-        });
-      }
-    } catch (e) {
+    } finally {
       setState(() {
+        isLoading = false;
         isLoadingMore = false;
       });
     }
   }
 
-  bool _isDeliveredOrder(String status) {
-    return status.toLowerCase() == 'delivered' ||
-        status.toLowerCase() == 'entregue';
+  bool _isActiveOrderStatus(String status) {
+    final activeStatuses = ['pending', 'confirmed', 'preparing', 'ready'];
+    return activeStatuses
+        .contains(OrderStatusExtension.fromString(status).value);
   }
 
-  bool _isActiveOrderStatus(String status) {
-    final activeStatuses = ['confirmado', 'preparando', 'pronto'];
-    return activeStatuses.contains(status.toLowerCase());
+  bool _isDeliveredOrder(String status) {
+    return OrderStatusExtension.fromString(status) == OrderStatus.delivered;
   }
 
   String _formatDate(String isoDate) {
@@ -319,7 +243,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         automaticallyImplyLeading: false,
       ),
       backgroundColor: const Color(0xFFFFFFFF),
-      body: isLoading
+      body: isLoading && orderHistory.isEmpty && activeOrder == null
           ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
               ? Center(
@@ -341,14 +265,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: _loadOrderHistory,
+                        onPressed: () => _loadOrderHistory(isRefresh: true),
                         child: const Text('Tentar novamente'),
                       ),
                     ],
                   ),
                 )
               : RefreshIndicator(
-                  onRefresh: _loadOrderHistory,
+                  onRefresh: () => _loadOrderHistory(isRefresh: true),
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.all(16),
@@ -373,7 +297,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(_getOrderDescription(activeOrder!) +
-                                    ' | ${businessCache[activeOrder!.businessId]?.appName ?? 'Estabelecimento'}'),
+                                    ' | ${businessCache[activeOrder!.idBusiness]?.appName ?? 'Estabelecimento'}'),
                                 if (activeOrder!.status == 'pendente') ...[
                                   const SizedBox(height: 8),
                                   Row(
@@ -385,29 +309,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                               context,
                                               '/bag/pendingOrderDetails',
                                               arguments: {
-                                                'order': activeOrder!,
+                                                'order': activeOrder!
                                               },
                                             );
                                           },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
                                             padding: const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 8,
-                                            ),
+                                                horizontal: 16, vertical: 8),
                                           ),
-                                          child: const Text(
-                                            'Pagar Agora',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
+                                          child: const Text('Pagar Agora',
+                                              style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold)),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -417,23 +335,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                               _cancelOrder(activeOrder!),
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.grey[600],
+                                            foregroundColor: Colors.white,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
+                                                borderRadius:
+                                                    BorderRadius.circular(8)),
                                             padding: const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 8,
-                                            ),
+                                                horizontal: 16, vertical: 8),
                                           ),
-                                          child: const Text(
-                                            'Cancelar',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
+                                          child: const Text('Cancelar',
+                                              style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold)),
                                         ),
                                       ),
                                     ],
@@ -464,10 +376,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         else
                           ...orderHistory.map((order) => Padding(
                                 padding: const EdgeInsets.only(bottom: 16),
-                                child: _buildHistoryItem(
-                                  context,
-                                  order: order,
-                                ),
+                                child: _buildHistoryItem(context, order: order),
                               )),
                         if (isLoadingMore)
                           const Padding(
@@ -484,204 +393,139 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildHistoryItem(BuildContext context, {required Order order}) {
-    final business = businessCache[order.businessId];
+    final business = businessCache[order.idBusiness];
     final businessName = business?.appName ?? 'Estabelecimento';
 
-    final hasReview = order.id != null && _orderReviewStatus[order.id!] != null;
-    final review = _orderReviewStatus[order.id!];
-    final isDelivered = _isDeliveredOrder(order.status);
-
-    print(
-        'Order ${order.id}: status=${order.status}, isDelivered=$isDelivered, hasReview=$hasReview');
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          _formatDate(order.createdAt),
-          style: const TextStyle(color: Colors.grey, fontSize: 14),
+    return Card(
+      color: Colors.grey[100],
+      elevation: 2.0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    businessName,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  _formatDate(order.createdAt),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _getOrderDescription(order),
+              style: const TextStyle(color: Colors.black54),
+            ),
+            const Divider(height: 24),
+            _buildBottomSection(context, order, businessName),
+          ],
         ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF2F2F2),
-            borderRadius: BorderRadius.circular(8),
+      ),
+    );
+  }
+
+  Widget _buildBottomSection(
+      BuildContext context, Order order, String businessName) {
+    // Condição 1: Pedido entregue e NÃO AVALIADO
+    if (order.status == 'entregue' && order.reviewed == false) {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          icon: const Icon(Icons.star_border, size: 20),
+          label: const Text('Fazer Avaliação'),
+          onPressed: () async {
+            final userData = await DatabaseHelper.instance.getUser();
+            if (userData != null && order.id != null) {
+              // Navega para a tela de avaliação e aguarda um resultado.
+              final reviewSubmitted = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ReviewScreen(
+                    estabelecimento: businessName,
+                    estabelecimentoId: order.idBusiness.toString(),
+                    idOrder: order.id!,
+                    idClient: userData['id'],
+                  ),
+                ),
+              );
+
+              if (reviewSubmitted == true) {
+                _loadOrderHistory(isRefresh: true);
+              }
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.storefront_outlined, size: 32),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      businessName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const Icon(Icons.arrow_forward_ios, size: 16),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Divider(),
+        ),
+      );
+    }
 
-              if (isDelivered) ...[
-                if (!hasReview)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        final userData =
-                            await DatabaseHelper.instance.getUser();
-                        if (userData != null && order.id != null) {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ReviewScreen(
-                                estabelecimento: businessName,
-                                estabelecimentoId: order.businessId.toString(),
-                                idOrder: order.id!,
-                                idClient: userData['id'],
-                              ),
-                            ),
-                          );
-                          if (result == true) {
-                            _loadOrderHistory();
-                          }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Dados de usuário ou pedido incompletos.')),
-                          );
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFE8514C),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
-                      child: const Text(
-                        'Fazer Avaliação',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  )
-                else
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Row(
-                      children: [
-                        const Text(
-                          'Avaliação feita: ',
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                        Row(
-                          children: List.generate(5, (index) {
-                            return Icon(
-                              index < review!.rating
-                                  ? Icons.star
-                                  : Icons.star_border,
-                              color: Colors.amber,
-                              size: 16,
-                            );
-                          }),
-                        ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 8),
-              ],
+    if (order.status == 'entregue' && order.reviewed == true) {
+      return const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check_circle, color: Colors.green, size: 20),
+          SizedBox(width: 8),
+          Text('Pedido avaliado!', style: TextStyle(color: Colors.grey)),
+        ],
+      );
+    }
 
-              if (order.status == 'pendente') ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/bag/pendingOrderDetails',
-                            arguments: {
-                              'order': order,
-                            },
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                        ),
-                        child: const Text(
-                          'Pagar Agora',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => _cancelOrder(order),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey[600],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                        ),
-                        child: const Text(
-                          'Cancelar',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
+    if (order.status == 'pendente') {
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/bag/pendingOrderDetails',
+                    arguments: {'order': order});
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Pagar Agora'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => _cancelOrder(order),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.grey[700],
+                side: BorderSide(color: Colors.grey[400]!),
+              ),
+              child: const Text('Cancelar'),
+            ),
+          ),
+        ],
+      );
+    }
 
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(_getOrderDescription(order)),
-              ),
-              const SizedBox(height: 4),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Status: ${_getStatusDisplayName(order.status)}',
-                  style: TextStyle(
-                    color: isDelivered ? Colors.green : Colors.red,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
+    return Row(
+      children: [
+        const Text('Status: ', style: TextStyle(color: Colors.grey)),
+        Text(
+          _getStatusDisplayName(order.status),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: order.status == 'cancelled' ? Colors.red : Colors.blueGrey,
           ),
         ),
       ],

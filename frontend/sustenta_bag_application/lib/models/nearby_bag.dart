@@ -84,6 +84,8 @@ class NearbyBag {
   final String description;
   final String createdAt;
   final Business business;
+  final List<String> tags;
+
 
   NearbyBag({
     required this.id,
@@ -92,6 +94,7 @@ class NearbyBag {
     required this.description,
     required this.createdAt,
     required this.business,
+    required this.tags,
   });
   factory NearbyBag.fromJson(Map<String, dynamic> json) {
     return NearbyBag(
@@ -101,6 +104,9 @@ class NearbyBag {
       description: json['description']?.toString() ?? '',
       createdAt: json['createdAt']?.toString() ?? '',
       business: Business.fromJson(json['business'] as Map<String, dynamic>),
+      tags: json['tags'] != null && json['tags'] is List
+          ? List<String>.from(json['tags'])
+          : [],
     );
   }
 
@@ -112,11 +118,11 @@ class NearbyBag {
       'description': description,
       'createdAt': createdAt,
       'business': business.toJson(),
+      'tags': tags,
     };
   }
 
   Map<String, dynamic> toBagCardFormat() {
-    // Mapear tipo da API para categoria da UI
     String category = _mapTypeToCategory(type);
 
     return {
@@ -126,7 +132,8 @@ class NearbyBag {
       'title': business.name,
       'price': price,
       'category': category,
-      'business': business, // Incluir o objeto business
+      'business': business,
+      'tags': tags,
     };
   }
 
