@@ -398,14 +398,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final business = businessCache[order.idBusiness];
     final businessName = business?.appName ?? 'Estabelecimento';
 
-    final isDelivered = _isDeliveredOrder(order.status);
-
-    final bool canReview = isDelivered && order.reviewed == false;
-    final bool hasBeenReviewed = isDelivered && order.reviewed == true;
-
-    print(
-        'Order ${order.id}: status=${order.status}, isDelivered=$isDelivered, reviewed=${order.reviewed}');
-
     return Card(
       elevation: 2.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -437,96 +429,107 @@ class _HistoryScreenState extends State<HistoryScreen> {
               _getOrderDescription(order),
               style: const TextStyle(color: Colors.black54),
             ),
-            const SizedBox(height: 4),
             const Divider(height: 24),
-            if (canReview)
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final userData = await DatabaseHelper.instance.getUser();
-                    if (userData != null && order.id != null) {
-                      final result = await Navigator.push<bool>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ReviewScreen(
-                            estabelecimento: businessName,
-                            estabelecimentoId: order.idBusiness.toString(),
-                            idOrder: order.id!,
-                            idClient: userData['id'],
-                          ),
-                        ),
-                      );
-                      if (result == true) {
-                        _loadOrderHistory(isRefresh: true);
-                      }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE8514C),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: const Text('Fazer Avaliação'),
-                ),
-              ),
-            if (hasBeenReviewed)
-              const Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.green, size: 18),
-                  SizedBox(width: 8),
-                  Text('Avaliação enviada com sucesso!',
-                      style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            if (order.status == 'pendente')
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/bag/pendingOrderDetails',
-                            arguments: {'order': order});
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text('Pagar Agora'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => _cancelOrder(order),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.grey[700],
-                        side: BorderSide(color: Colors.grey[400]!),
-                      ),
-                      child: const Text('Cancelar'),
-                    ),
-                  ),
-                ],
-              ),
-            if (!canReview && !hasBeenReviewed && order.status != 'pendente')
-              Row(
-                children: [
-                  const Text('Status: ', style: TextStyle(color: Colors.grey)),
-                  Text(
-                    _getStatusDisplayName(order.status),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: order.status.toLowerCase() == 'cancelled'
-                          ? Colors.red
-                          : Colors.blueGrey,
-                    ),
-                  ),
-                ],
-              ),
+            _buildBottomSection(context, order, businessName),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBottomSection(
+      BuildContext context, Order order, String businessName) {
+    // Condição 1: Pedido entregue e NÃO AVALIADO
+    if (order.status == 'entregue' && order.reviewed == false) {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          icon: const Icon(Icons.star_border, size: 20),
+          label: const Text('Fazer Avaliação'),
+          onPressed: () async {
+            final userData = await DatabaseHelper.instance.getUser();
+            if (userData != null && order.id != null) {
+              // Navega para a tela de avaliação e aguarda um resultado.
+              final reviewSubmitted = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ReviewScreen(
+                    estabelecimento: businessName,
+                    estabelecimentoId: order.idBusiness.toString(),
+                    idOrder: order.id!,
+                    idClient: userData['id'],
+                  ),
+                ),
+              );
+
+              if (reviewSubmitted == true) {
+                _loadOrderHistory(isRefresh: true);
+              }
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+      );
+    }
+
+    if (order.status == 'entregue' && order.reviewed == true) {
+      return const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.check_circle, color: Colors.green, size: 20),
+          SizedBox(width: 8),
+          Text('Pedido avaliado!', style: TextStyle(color: Colors.grey)),
+        ],
+      );
+    }
+
+    if (order.status == 'pendente') {
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/bag/pendingOrderDetails',
+                    arguments: {'order': order});
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Pagar Agora'),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton(
+              onPressed: () => _cancelOrder(order),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.grey[700],
+                side: BorderSide(color: Colors.grey[400]!),
+              ),
+              child: const Text('Cancelar'),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        const Text('Status: ', style: TextStyle(color: Colors.grey)),
+        Text(
+          _getStatusDisplayName(order.status),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: order.status == 'cancelled' ? Colors.red : Colors.blueGrey,
+          ),
+        ),
+      ],
     );
   }
 }

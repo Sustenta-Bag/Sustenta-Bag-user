@@ -37,6 +37,7 @@ class Order {
               ?.map((item) => OrderItem.fromJson(item))
               .toList() ??
           [],
+      reviewed: json['reviewed'] ?? false,
     );
   }
 
