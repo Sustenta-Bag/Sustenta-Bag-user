@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../components/bag_card.dart';
-import '../services/firebase_messaging_service.dart';
 import '../services/location_service.dart';
 import '../utils/database_helper.dart';
 import 'business/business_search_screen.dart';

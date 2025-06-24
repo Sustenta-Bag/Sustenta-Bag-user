@@ -82,7 +82,7 @@ class _ReviewScreenState extends State<ReviewScreen>
       final createdReview = await ReviewService.createReview(reviewData, token);
 
       if (createdReview != null) {
-        print('Avaliação enviada com sucesso: ${createdReview.id}');
+        print('Avaliação enviada com sucesso: ${createdReview.idReview}');
         if (mounted) {
           _showSuccessDialog();
         }

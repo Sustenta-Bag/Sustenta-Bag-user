@@ -1,31 +1,31 @@
 class Review {
-  final String? id;
-  final String? userName;
-  final DateTime? date;
+  final int? idReview;
+  final int idClient;
   final int idOrder;
+  final String? clientName;
   final int rating;
   final String comment;
-  final int idClient;
+  final DateTime? createdAt;
 
   Review({
-    this.id,
-    this.userName,
-    this.date,
+    this.idReview,
+    required this.idClient,
     required this.idOrder,
+    this.clientName,
     required this.rating,
     required this.comment,
-    required this.idClient,
+    this.createdAt,
   });
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
-      id: json['idReview']?.toString(),
-      userName: 'Cliente ID: ${json['idClient']?.toString() ?? 'Desconhecido'}',
-      rating: (json['rating'] as num).toInt(),
-      comment: json['comment'] ?? '',
-      date: DateTime.tryParse(json['createdAt'] ?? ''),
+      idReview: json['idReview'] as int,
       idClient: json['idClient'] as int,
       idOrder: json['idOrder'] as int,
+      clientName: json['clientName'] ?? 'Cliente Anônimo',
+      rating: (json['rating'] as num).toInt(),
+      comment: json['comment'] ?? '',
+      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
     );
   }
 

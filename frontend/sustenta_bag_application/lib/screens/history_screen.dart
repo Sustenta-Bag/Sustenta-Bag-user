@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/order_service.dart';
 import '../../services/business_service.dart';
-import '../../services/review_service.dart';
 import '../../utils/database_helper.dart';
 import '../../models/order.dart';
 import '../../models/business.dart';
-import '../../models/review.dart';
 import 'Review/review_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -399,6 +397,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final businessName = business?.appName ?? 'Estabelecimento';
 
     return Card(
+      color: Colors.grey[100],
       elevation: 2.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.only(bottom: 16),
