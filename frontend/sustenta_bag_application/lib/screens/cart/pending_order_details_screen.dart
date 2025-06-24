@@ -53,13 +53,13 @@ class _PendingOrderDetailsScreenState extends State<PendingOrderDetailsScreen> {
       }
 
       final business =
-          await BusinessService.getBusiness(widget.order.businessId, token);
+          await BusinessService.getBusiness(widget.order.idBusiness, token);
 
       Map<int, Bag> bagDetailsMap = {};
       for (final item in orderFromApi.items) {
-        final bag = await BagService.getBag(item.bagId.toString(), token);
+        final bag = await BagService.getBag(item.idBag.toString(), token);
         if (bag != null) {
-          bagDetailsMap[item.bagId] = bag;
+          bagDetailsMap[item.idBag] = bag;
         }
       }
 
@@ -271,7 +271,7 @@ class _PendingOrderDetailsScreenState extends State<PendingOrderDetailsScreen> {
                           itemCount: fullOrder?.items.length ?? 0,
                           itemBuilder: (context, index) {
                             final item = fullOrder!.items[index];
-                            final bag = bagDetails[item.bagId];
+                            final bag = bagDetails[item.idBag];
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),

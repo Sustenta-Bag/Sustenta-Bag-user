@@ -1,31 +1,32 @@
 class Order {
   final int? id;
-  final int userId;
-  final int businessId;
+  final int idClient;
+  final int idBusiness;
   final String status;
   final double totalAmount;
   final String? notes;
   final String createdAt;
   final String? updatedAt;
   final List<OrderItem> items;
+  final bool? reviewed;
 
-  Order({
-    this.id,
-    required this.userId,
-    required this.businessId,
-    required this.status,
-    required this.totalAmount,
-    this.notes,
-    required this.createdAt,
-    this.updatedAt,
-    required this.items,
-  });
+  Order(
+      {this.id,
+      required this.idClient,
+      required this.idBusiness,
+      required this.status,
+      required this.totalAmount,
+      this.notes,
+      required this.createdAt,
+      this.updatedAt,
+      required this.items,
+      this.reviewed});
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
       id: json['id'],
-      userId: json['userId'],
-      businessId: json['businessId'],
+      idClient: json['idClient'],
+      idBusiness: json['idBusiness'],
       status: json['status'],
       totalAmount:
           (json['totalAmount'] is num) ? json['totalAmount'].toDouble() : 0.0,
@@ -42,24 +43,24 @@ class Order {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'userId': userId,
-      'businessId': businessId,
+      'idClient': idClient,
+      'idBusiness': idBusiness,
       'status': status,
       'totalAmount': totalAmount,
       'notes': notes,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
       'items': items.map((item) => item.toJson()).toList(),
+      'reviewed': reviewed,
     };
   }
 
   Map<String, dynamic> toCreatePayload() {
     return {
-      'userId': userId,
-      'idBusiness': businessId,
+      'idBusiness': idBusiness,
       'items': items
           .map((item) => {
-                'idBag': item.bagId,
+                'idBag': item.idBag,
                 'quantity': item.quantity,
               })
           .toList(),
@@ -70,7 +71,7 @@ class Order {
 class OrderItem {
   final int? id;
   final int? orderId;
-  final int bagId;
+  final int idBag;
   final int quantity;
   final double unitPrice;
   final double totalPrice;
@@ -80,7 +81,7 @@ class OrderItem {
   OrderItem({
     this.id,
     this.orderId,
-    required this.bagId,
+    required this.idBag,
     required this.quantity,
     required this.unitPrice,
     required this.totalPrice,
@@ -102,13 +103,13 @@ class OrderItem {
 
     return OrderItem(
       id: json['id'],
-      orderId: json['orderId'],
-      bagId: json['bagId'],
+      orderId: json['idOrder'],
+      idBag: json['idBag'],
       quantity: json['quantity'],
       unitPrice: priceValue,
       totalPrice: (json['totalPrice'] is num)
-          ? json['totalPrice'].toDouble()
-          : priceValue * (json['quantity'] ?? 1),
+          ? (json['totalPrice'] as num).toDouble()
+          : priceValue * (json['quantity'] as int),
       bagName: json['bagName'],
       bagDescription: json['bagDescription'],
     );
@@ -118,7 +119,7 @@ class OrderItem {
     return {
       'id': id,
       'orderId': orderId,
-      'bagId': bagId,
+      'idBag': idBag,
       'quantity': quantity,
       'unitPrice': unitPrice,
       'totalPrice': totalPrice,

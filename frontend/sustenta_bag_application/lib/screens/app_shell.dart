@@ -34,10 +34,9 @@ class _AppShellState extends State<AppShell> {
   Future<void> _loadActiveCartOnLogin() async {
     try {
       final token = await DatabaseHelper.instance.getToken();
-      final userData = await DatabaseHelper.instance.getUser();
-      
-      if (token != null && userData != null) {
-        await _cartService.loadActiveCart(userData['id'], token);
+
+      if (token != null) {
+        await _cartService.loadActiveCart(token);
       }
     } catch (e) {
       print('Erro ao carregar carrinho ativo no AppShell: $e');

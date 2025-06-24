@@ -11,7 +11,8 @@ class BagScreen extends StatefulWidget {
 }
 
 class _BagScreenState extends State<BagScreen>
-    with WidgetsBindingObserver, RouteAware {  final CartService _cartService = CartService();
+    with WidgetsBindingObserver, RouteAware {
+  final CartService _cartService = CartService();
   bool _isLoading = false;
 
   @override
@@ -68,13 +69,11 @@ class _BagScreenState extends State<BagScreen>
 
     try {
       final token = await DatabaseHelper.instance.getToken();
-      final userData = await DatabaseHelper.instance.getUser();
-
-      if (token != null && userData != null) {
-        await _cartService.loadActiveCart(userData['id'], token);
+      if (token != null) {
+        await _cartService.loadActiveCart(token);
       }
     } catch (e) {
-      print('Erro ao carregar carrinho ativo: $e');
+      print('Erro ao carregar carrinho ativo na BagScreen: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -88,6 +87,7 @@ class _BagScreenState extends State<BagScreen>
     final item = _cartService.items[index];
     _cartService.removeItem(item.bagId);
   }
+
   void _goToDeliveryOptions() {
     if (_cartService.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
