@@ -80,6 +80,7 @@ class ReviewService {
     required String token,
     String? idBusiness,
     String? idClient,
+    String? ClientName,
     int page = 1,
     int limit = 20,
     String? rating,

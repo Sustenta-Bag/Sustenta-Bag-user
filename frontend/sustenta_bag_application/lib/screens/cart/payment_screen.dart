@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:async';
+import '../../services/cart_service.dart';
 import '../../services/payment_service.dart';
 import '../../services/order_service.dart';
+import '../../utils/database_helper.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -124,6 +126,7 @@ class _PaymentScreenState extends State<PaymentScreen>
   }
 
   void _handlePaymentResult() {
+    CartService().clear();
     if (_paymentStatus == 'approved') {
       _successAnimationController.forward();
       _startRedirectCountdown();
@@ -153,13 +156,27 @@ class _PaymentScreenState extends State<PaymentScreen>
       if (_paymentId != null) {
         final paymentData = await PaymentService.getPaymentStatus(_paymentId!);
         if (paymentData != null && paymentData['orderId'] != null) {
-          final orderId = paymentData['orderId'];
-          await OrderService.cancelOrder(orderId, 'Payment rejected');
-          print('Order $orderId canceled due to payment rejection');
+          final int orderId = int.parse(paymentData['orderId'].toString());
+
+          final String? token = await DatabaseHelper.instance.getToken();
+
+          if (token == null) {
+            print('Erro: Token não encontrado. Impossível cancelar o pedido.');
+            return;
+          }
+          final success = await OrderService.cancelOrder(orderId, token);
+
+          if (success) {
+            print(
+                'Pedido $orderId cancelado com sucesso devido à rejeição do pagamento.');
+          } else {
+            print(
+                'Falha ao cancelar o pedido $orderId após rejeição do pagamento.');
+          }
         }
       }
     } catch (e) {
-      print('Error canceling associated order: $e');
+      print('Erro ao cancelar o pedido associado: $e');
     }
   }
 

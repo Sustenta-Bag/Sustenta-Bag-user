@@ -382,24 +382,24 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
         children: [
           Row(
             children: [
+              // Você pode adicionar um avatar/ícone aqui se quiser
+              // const CircleAvatar(child: Icon(Icons.person)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          review.userName ?? 'Usuário Desconhecido',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
+                    // LINHA CORRIGIDA
                     Text(
-                      _formatDate(review.date ?? DateTime.now()),
+                      review.clientName ?? 'Cliente Anônimo', // <-- MUDANÇA: usa clientName
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    // LINHA CORRIGIDA
+                    Text(
+                      _formatDate(review.createdAt ?? DateTime.now()), // <-- MUDANÇA: usa createdAt
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12,
@@ -412,13 +412,14 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            review.comment,
-            style: const TextStyle(
-              fontSize: 14,
-              height: 1.4,
+          if (review.comment.isNotEmpty)
+            Text(
+              review.comment,
+              style: const TextStyle(
+                fontSize: 14,
+                height: 1.4,
+              ),
             ),
-          ),
         ],
       ),
     );

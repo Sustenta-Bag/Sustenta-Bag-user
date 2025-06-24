@@ -154,7 +154,6 @@ class BagCard extends StatelessWidget {
 
                   const SizedBox(height: 12),
 
-                  // Linha divisória sutil
                   Container(
                     height: 1,
                     color: Colors.grey.withOpacity(0.1),
