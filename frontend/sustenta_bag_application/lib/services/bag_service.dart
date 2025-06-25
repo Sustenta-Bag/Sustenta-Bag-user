@@ -45,41 +45,32 @@ class BagService {
     }
   }
 
-  static Future<List<Bag>> getBagsByBusiness(
-      String businessId, String token) async {
+  static Future<List<Bag>> getBagsByBusiness(String businessId, String token) async {
     try {
+      final uri = Uri.parse('$baseUrl/bags').replace(
+          queryParameters: {
+            'idBusiness': businessId,
+          },
+      );
       final response = await http.get(
-        Uri.parse('$baseUrl/bags/business/$businessId'),
-        headers: {'Authorization': 'Bearer $token'},
+        uri,
+        headers: ApiConfig.getHeaders(token),
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => Bag.fromJson(json)).toList();
+        final Map<String, dynamic> apiResponse = jsonDecode(response.body);
+
+        final List<dynamic> bagData = apiResponse['data'] as List<dynamic>;
+
+        return bagData.map((json) => Bag.fromJson(json)).toList();
+      } else {
+        print('Erro ao buscar sacolas da empresa: ${response.statusCode} - ${response.body}');
+        return [];
       }
-      return [];
     } catch (e) {
       print('Erro ao buscar sacolas da empresa: $e');
       return [];
     }
   }
 
-  static Future<List<Bag>> getActiveBagsByBusiness(
-      String businessId, String token) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/bags/business/$businessId/active'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) => Bag.fromJson(json)).toList();
-      }
-      return [];
-    } catch (e) {
-      print('Erro ao buscar sacolas ativas da empresa: $e');
-      return [];
-    }
-  }
 }

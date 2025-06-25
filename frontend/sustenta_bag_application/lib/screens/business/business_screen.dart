@@ -5,6 +5,7 @@ import 'package:sustenta_bag_application/services/favorite_service.dart';
 import '../../config/api_config.dart';
 import '../../utils/database_helper.dart';
 import '../Review/show_review_screen.dart';
+import '../bag/business_bag_screen.dart';
 
 class StoreScreen extends StatefulWidget {
   final String id;
@@ -312,7 +313,19 @@ class _StoreScreenState extends State<StoreScreen> {
                             const Spacer(),
 
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                // Ação de navegar para a nova tela
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    // Construindo a BusinessBagsScreen...
+                                    builder: (context) => BusinessBagsScreen(
+                                      // ... e passando o objeto 'business' completo, que a tela agora exige.
+                                      business: widget.business,
+                                    ),
+                                  ),
+                                );
+                              },
                               child: const Text(
                                 'Ver Sacolas',
                                 style: TextStyle(
