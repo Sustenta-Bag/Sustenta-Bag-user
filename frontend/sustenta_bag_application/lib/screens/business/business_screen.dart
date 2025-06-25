@@ -37,16 +37,6 @@ class _StoreScreenState extends State<StoreScreen> {
   String? _token;
   int? _userId;
 
-  final Map<String, String> workingDays = {
-    'Segunda-feira': '18:00 às 23:30',
-    'Terça-feira': '18:00 às 23:30',
-    'Quarta-feira': '18:00 às 23:30',
-    'Quinta-feira': '18:00 às 23:30',
-    'Sexta-feira': '18:00 às 23:30',
-    'Sábado': '18:00 às 23:30',
-    'Domingo': '18:00 às 23:30',
-  };
-
   @override
   void initState() {
     super.initState();
@@ -347,53 +337,6 @@ class _StoreScreenState extends State<StoreScreen> {
                           color: Colors.black,
                           fontSize: 14,
                         ),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Fechado',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 19,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: workingDays.length,
-                        itemBuilder: (context, index) {
-                          String day = workingDays.keys.elementAt(index);
-                          String hours = workingDays.values.elementAt(index);
-
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 2.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  day,
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  hours,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
                       ),
                     ),
                   ],
