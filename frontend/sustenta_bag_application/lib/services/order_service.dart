@@ -188,7 +188,7 @@ class OrderService {
   static Future<bool> cancelOrder(int orderId, String token) async {
     try {
       final response = await http.patch(
-        Uri.parse('$baseUrl/orders/$orderId/status'),
+        Uri.parse('$baseUrl/orders/$orderId/cancel'),
         headers: ApiConfig.getHeaders(token),
         body: jsonEncode({'status': 'cancelled'}),
       );

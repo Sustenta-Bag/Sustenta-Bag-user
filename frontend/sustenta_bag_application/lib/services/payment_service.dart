@@ -3,8 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PaymentService {
-  static String get baseUrl => dotenv.env['API_PAYMENT_BASE_URL'] ?? 'http://10.0.2.2:3001/api';
-  
+  static String get baseUrl =>
+      dotenv.env['API_PAYMENT_BASE_URL'] ?? 'http://10.0.2.2:3001/api';
+
   static Future<Map<String, dynamic>?> createPayment({
     required String userId,
     required String orderId,
@@ -17,7 +18,8 @@ class PaymentService {
         Uri.parse('$baseUrl/payments'),
         headers: {
           'Content-Type': 'application/json',
-        },        body: jsonEncode({
+        },
+        body: jsonEncode({
           'userId': userId,
           'orderId': orderId,
           'items': items,
@@ -39,7 +41,9 @@ class PaymentService {
       return null;
     }
   }
-  static Future<Map<String, dynamic>?> getPaymentStatus(String paymentId) async {
+
+  static Future<Map<String, dynamic>?> getPaymentStatus(
+      String paymentId) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/payments/$paymentId'),
@@ -61,7 +65,8 @@ class PaymentService {
     }
   }
 
-  static Future<Map<String, dynamic>?> getPaymentByOrderId(String orderId) async {
+  static Future<Map<String, dynamic>?> getPaymentByOrderId(
+      String orderId) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/payments/order/$orderId'),
@@ -87,7 +92,6 @@ class PaymentService {
     }
   }
 
-
   static Future<bool> cancelPayment(String paymentId) async {
     try {
       final response = await http.post(
@@ -109,6 +113,7 @@ class PaymentService {
       return false;
     }
   }
+
   static Future<bool> simulatePaymentApproval(String paymentId) async {
     try {
       final paymentData = await getPaymentStatus(paymentId);
