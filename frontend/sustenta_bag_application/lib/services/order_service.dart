@@ -188,19 +188,19 @@ class OrderService {
   static Future<bool> cancelOrder(int orderId, String token) async {
     try {
       final response = await http.patch(
-        Uri.parse('$baseUrl/orders/$orderId/status'),
+        Uri.parse('$baseUrl/orders/$orderId/cancel'),
         headers: ApiConfig.getHeaders(token),
-        body: jsonEncode({'status': 'cancelled'}),
+        body: jsonEncode({'status': 'cancelado'}),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         return true;
       } else {
         print('Erro ao cancelar pedido (status): ${response.statusCode} - ${response.body}');
         return false;
       }
     } catch (e) {
-      print('Erro ao cancelar pedido (status): $e');
+      print('Erro ao cancelar pedido (exceção): $e');
       return false;
     }
   }
