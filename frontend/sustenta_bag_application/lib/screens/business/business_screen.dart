@@ -304,20 +304,17 @@ class _StoreScreenState extends State<StoreScreen> {
 
                             TextButton(
                               onPressed: () {
-                                // Ação de navegar para a nova tela
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    // Construindo a BusinessBagsScreen...
                                     builder: (context) => BusinessBagsScreen(
-                                      // ... e passando o objeto 'business' completo, que a tela agora exige.
                                       business: widget.business,
                                     ),
                                   ),
                                 );
                               },
                               child: const Text(
-                                'Ver Sacolas',
+                                'Ver Bags',
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
@@ -330,13 +327,56 @@ class _StoreScreenState extends State<StoreScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        widget.business.description ??
-                            'Esta loja não forneceu uma descrição.',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Descrição da loja (agora com o texto da API)
+                          Text(
+                            widget.storeDescription, // Já foi corrigido na chamada
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Chip de Status (Aberto/Fechado)
+                          Chip(
+                            avatar: Icon(
+                              widget.business.status ? Icons.check_circle : Icons.cancel,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            label: Text(
+                              widget.business.status ? 'Aberto Agora' : 'Fechado',
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                            backgroundColor: widget.business.status ? Colors.green : Colors.red,
+                          ),
+                          const Divider(height: 30),
+
+                          // Horário de Funcionamento
+                          _buildInfoRow(
+                            icon: Icons.access_time_filled,
+                            text: "Horário: ${widget.workingHours}",
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Informações de Entrega (só aparecem se a loja fizer entrega)
+                          if (widget.business.delivery) ...[
+                            _buildInfoRow(
+                              icon: Icons.delivery_dining,
+                              text:
+                              "Entrega em aprox. ${widget.business.deliveryTime ?? '?'} min",
+                            ),
+                            const SizedBox(height: 10),
+                            _buildInfoRow(
+                              icon: Icons.payments,
+                              text:
+                              "Taxa de entrega: R\$ ${widget.business.deliveryTax?.toStringAsFixed(2) ?? 'N/A'}",
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ],
@@ -346,6 +386,19 @@ class _StoreScreenState extends State<StoreScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow({required IconData icon, required String text}) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.grey.shade600, size: 20),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: const TextStyle(fontSize: 15),
+        ),
+      ],
     );
   }
 

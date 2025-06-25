@@ -223,22 +223,20 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                             const Spacer(),
                             TextButton(
                               onPressed: () {
-                                final businessData =
-                                    _convertToBusinessData(widget.business);
+                                final businessData = _convertToBusinessData(widget.business);
 
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => StoreScreen(
-                                      id: widget.business.id.toString(),
-                                      storeName: widget.business.name,
-                                      storeLogo: widget.business.logo ??
-                                          'assets/shop.png',
-                                      storeDescription:
-                                          'Descrição não disponível.',
-                                      rating: 4.8,
-                                      workingHours: '18:00 às 23:30',
-                                      business: businessData,
+                                      // Use os campos do `businessData` que você acabou de criar.
+                                      id: businessData.id.toString(),
+                                      storeName: businessData.appName, // Agora está correto
+                                      storeLogo: businessData.logo ?? 'assets/shop.png', // Agora está correto
+                                      storeDescription: businessData.description ?? 'Descrição não disponível.', // Agora está correto
+                                      rating: 4.8, // Este dado não vem da API, mantemos fixo
+                                      workingHours: businessData.openingHours ?? '18:00 às 23:30', // Agora está correto
+                                      business: businessData, // CORRETO! Os tipos agora são os mesmos (BusinessData).
                                     ),
                                   ),
                                 );
