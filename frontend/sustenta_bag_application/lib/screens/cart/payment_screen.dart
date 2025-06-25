@@ -270,7 +270,7 @@ class _PaymentScreenState extends State<PaymentScreen>
   String _getStatusMessage() {
     switch (_paymentStatus) {
       case 'pending':
-        return 'Aguardando confirmação do pagamento...\n\nEm desenvolvimento: Use os botões abaixo para simular o resultado do pagamento.';
+        return 'Aguardando confirmação do pagamento...';
       case 'approved':
         return 'Pagamento aprovado! Redirecionando em $_redirectCountdown segundos...';
       case 'rejected':
@@ -483,15 +483,6 @@ class _PaymentScreenState extends State<PaymentScreen>
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Para testar, use os botões de simulação:',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
                     const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -505,6 +496,10 @@ class _PaymentScreenState extends State<PaymentScreen>
                             backgroundColor: Colors.green,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            minimumSize: const Size(140, 56),
                           ),
                         ),
                         ElevatedButton.icon(
@@ -516,6 +511,11 @@ class _PaymentScreenState extends State<PaymentScreen>
                             backgroundColor: Colors.red,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            minimumSize: const Size(140, 56),
+
                           ),
                         ),
                       ],

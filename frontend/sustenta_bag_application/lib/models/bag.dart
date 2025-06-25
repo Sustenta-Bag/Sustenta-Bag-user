@@ -6,6 +6,7 @@ class Bag {
   final int status;
   final int idBusiness;
   final List<String> tags;
+  final String type;
 
   Bag({
     required this.id,
@@ -15,12 +16,14 @@ class Bag {
     required this.status,
     required this.idBusiness,
     required this.tags,
+    required this.type
   });
 
   factory Bag.fromJson(Map<String, dynamic> json) {
     return Bag(
       id: json['id'],
       name: json['type'],
+      type: json['type']?.toString() ?? '',
       description: json['description'],
       price: json['price'].toDouble(),
       status: json['status'],
@@ -32,7 +35,7 @@ class Bag {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'type': name,
+      'type': type,
       'description': description,
       'price': price,
       'status': status,
