@@ -133,6 +133,7 @@ class OrderItem {
 enum OrderStatus {
   pending,
   confirmed,
+  paid,
   preparing,
   ready,
   delivered,
@@ -146,6 +147,8 @@ extension OrderStatusExtension on OrderStatus {
         return 'Pendente';
       case OrderStatus.confirmed:
         return 'Confirmado';
+      case OrderStatus.paid:
+        return 'Pago';
       case OrderStatus.preparing:
         return 'Preparando';
       case OrderStatus.ready:
@@ -163,6 +166,8 @@ extension OrderStatusExtension on OrderStatus {
         return 'pending';
       case OrderStatus.confirmed:
         return 'confirmed';
+      case OrderStatus.paid:
+        return 'pago';
       case OrderStatus.preparing:
         return 'preparing';
       case OrderStatus.ready:
@@ -182,6 +187,8 @@ extension OrderStatusExtension on OrderStatus {
       case 'confirmed':
       case 'confirmado':
         return OrderStatus.confirmed;
+      case 'pago':
+        return OrderStatus.paid;
       case 'preparing':
       case 'preparando':
         return OrderStatus.preparing;

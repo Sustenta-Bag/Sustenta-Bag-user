@@ -5,6 +5,7 @@ import 'package:sustenta_bag_application/services/favorite_service.dart';
 import '../../config/api_config.dart';
 import '../../utils/database_helper.dart';
 import '../Review/show_review_screen.dart';
+import '../bag/business_bag_screen.dart';
 
 class StoreScreen extends StatefulWidget {
   final String id;
@@ -35,16 +36,6 @@ class _StoreScreenState extends State<StoreScreen> {
   bool isLoadingFavorite = true;
   String? _token;
   int? _userId;
-
-  final Map<String, String> workingDays = {
-    'Segunda-feira': '18:00 às 23:30',
-    'Terça-feira': '18:00 às 23:30',
-    'Quarta-feira': '18:00 às 23:30',
-    'Quinta-feira': '18:00 às 23:30',
-    'Sexta-feira': '18:00 às 23:30',
-    'Sábado': '18:00 às 23:30',
-    'Domingo': '18:00 às 23:30',
-  };
 
   @override
   void initState() {
@@ -312,9 +303,18 @@ class _StoreScreenState extends State<StoreScreen> {
                             const Spacer(),
 
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BusinessBagsScreen(
+                                      business: widget.business,
+                                    ),
+                                  ),
+                                );
+                              },
                               child: const Text(
-                                'Ver Sacolas',
+                                'Ver Bags',
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
@@ -327,60 +327,56 @@ class _StoreScreenState extends State<StoreScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        widget.business.description ??
-                            'Esta loja não forneceu uma descrição.',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.all(16.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Fechado',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 19,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: workingDays.length,
-                        itemBuilder: (context, index) {
-                          String day = workingDays.keys.elementAt(index);
-                          String hours = workingDays.values.elementAt(index);
-
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0, vertical: 2.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  day,
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  hours,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Descrição da loja (agora com o texto da API)
+                          Text(
+                            widget.storeDescription, // Já foi corrigido na chamada
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontSize: 14,
                             ),
-                          );
-                        },
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Chip de Status (Aberto/Fechado)
+                          Chip(
+                            avatar: Icon(
+                              widget.business.status ? Icons.check_circle : Icons.cancel,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            label: Text(
+                              widget.business.status ? 'Aberto Agora' : 'Fechado',
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                            backgroundColor: widget.business.status ? Colors.green : Colors.red,
+                          ),
+                          const Divider(height: 30),
+
+                          // Horário de Funcionamento
+                          _buildInfoRow(
+                            icon: Icons.access_time_filled,
+                            text: "Horário: ${widget.workingHours}",
+                          ),
+                          const SizedBox(height: 10),
+
+                          // Informações de Entrega (só aparecem se a loja fizer entrega)
+                          if (widget.business.delivery) ...[
+                            _buildInfoRow(
+                              icon: Icons.delivery_dining,
+                              text:
+                              "Entrega em aprox. ${widget.business.deliveryTime ?? '?'} min",
+                            ),
+                            const SizedBox(height: 10),
+                            _buildInfoRow(
+                              icon: Icons.payments,
+                              text:
+                              "Taxa de entrega: R\$ ${widget.business.deliveryTax?.toStringAsFixed(2) ?? 'N/A'}",
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ],
@@ -390,6 +386,19 @@ class _StoreScreenState extends State<StoreScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildInfoRow({required IconData icon, required String text}) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.grey.shade600, size: 20),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: const TextStyle(fontSize: 15),
+        ),
+      ],
     );
   }
 

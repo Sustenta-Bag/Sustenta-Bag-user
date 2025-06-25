@@ -172,7 +172,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   onPressed: () {
                                     _loadNearbyBags();
                                   },
-                                  child: const Text('Atualizar'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.orange.withOpacity(0.6),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    elevation: 0,
+                                  ),
+                                  child: const Text('Atualizar', style: TextStyle(color: Colors.white)),
                                 ),
                               ],
                             ),

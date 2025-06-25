@@ -452,15 +452,6 @@ class _DeliveryOptionScreenState extends State<DeliveryOptionScreen> {
                               ],
                             ),
                           ),
-                          TextButton(
-                            onPressed: () {
-                              // TODO: Implementar troca de endereço
-                            },
-                            child: const Text(
-                              'Trocar',
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
                         ],
                       ),
                     ),
