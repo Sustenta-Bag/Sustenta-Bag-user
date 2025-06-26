@@ -179,50 +179,58 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
       body: isLoading && reviews.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: () => _loadReviews(clearExisting: true),
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: _buildStatsHeader(),
-                  ),
+        onRefresh: () => _loadReviews(clearExisting: true),
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            SliverToBoxAdapter(
+              child: _buildStatsHeader(),
+            ),
+
+            /*
                   SliverToBoxAdapter(
                     child: _buildFilters(),
                   ),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        if (index == reviews.length && isPaginating) {
-                          return const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                        if (index >= reviews.length) return null;
+                  */
 
-                        return _buildReviewCard(reviews[index]);
-                      },
-                      childCount: reviews.length + (isPaginating ? 1 : 0),
-                    ),
-                  ),
-                  if (reviews.isEmpty && !isLoading && !isPaginating)
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: Text(
-                          selectedFilter == 'Todas'
-                              ? 'Nenhuma avaliação encontrada para esta loja.'
-                              : 'Nenhuma avaliação encontrada com este filtro.',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ),
-                    ),
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 20),
-                  ),
-                ],
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 16),
+            ),
+
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                  if (index == reviews.length && isPaginating) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  if (index >= reviews.length) return null;
+
+                  return _buildReviewCard(reviews[index]);
+                },
+                childCount: reviews.length + (isPaginating ? 1 : 0),
               ),
             ),
+            if (reviews.isEmpty && !isLoading && !isPaginating)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Text(
+                    selectedFilter == 'Todas'
+                        ? 'Nenhuma avaliação encontrada para esta loja.'
+                        : 'Nenhuma avaliação encontrada com este filtro.',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ),
+              ),
+            const SliverToBoxAdapter(
+              child: SizedBox(height: 20),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -283,7 +291,7 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
                       int stars = 5 - index;
                       int count = stats!.ratingDistribution[stars] ?? 0;
                       double percentage =
-                          _totalReviews > 0 ? count / _totalReviews : 0;
+                      _totalReviews > 0 ? count / _totalReviews : 0;
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -382,24 +390,20 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
         children: [
           Row(
             children: [
-              // Você pode adicionar um avatar/ícone aqui se quiser
-              // const CircleAvatar(child: Icon(Icons.person)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // LINHA CORRIGIDA
                     Text(
-                      review.clientName ?? 'Cliente Anônimo', // <-- MUDANÇA: usa clientName
+                      review.clientName ?? 'Cliente Anônimo',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
-                    // LINHA CORRIGIDA
                     Text(
-                      _formatDate(review.createdAt ?? DateTime.now()), // <-- MUDANÇA: usa createdAt
+                      _formatDate(review.createdAt ?? DateTime.now()),
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12,
@@ -433,8 +437,8 @@ class _ShowReviewScreenState extends State<ShowReviewScreen> {
           index < rating.floor()
               ? Icons.star
               : index < rating
-                  ? Icons.star_half
-                  : Icons.star_border,
+              ? Icons.star_half
+              : Icons.star_border,
           color: Colors.amber,
           size: 16,
         );

@@ -480,7 +480,8 @@ class _BusinessSearchScreenState extends State<BusinessSearchScreen>
                   storeDescription: business.description ??
                       'Não há descrição para esta loja.',
                   rating: 0.0,
-                  workingHours: 'Horário não disponível',
+                  workingHours:
+                  business.openingHours ?? 'Horário não informado',
                   business: business,
                 ),
               ),
