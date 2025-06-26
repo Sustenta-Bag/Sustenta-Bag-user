@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:sustenta_bag_application/models/nearby_bag.dart';
-import 'package:sustenta_bag_application/models/business.dart';
 import 'package:sustenta_bag_application/screens/business/business_screen.dart';
 import '../../models/allergen_tag.dart';
+import '../../services/business_service.dart';
 import '../../services/cart_service.dart';
+import '../../utils/database_helper.dart';
 
 class DescriptionBagScreen extends StatefulWidget {
   final String id;
@@ -37,6 +38,8 @@ class DescriptionBagScreen extends StatefulWidget {
 
 class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
   final CartService _cartService = CartService();
+  bool _isLoadingStore = false;
+
 
   @override
   void initState() {
@@ -78,34 +81,58 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
     Navigator.pushNamed(context, '/bag');
   }
 
-  BusinessData _convertToBusinessData(Business business) {
-    return BusinessData(
-      id: business.id,
-      legalName: business.legalName,
-      cnpj: '',
-      appName: business.name,
-      cellphone: '',
-      description: null,
-      delivery: false,
-      deliveryTax: null,
-      idAddress: 0,
-      deliveryTime: 'Tempo não informado',
-      logo: business.logo,
-      status: true,
-      createdAt: DateTime.now().toIso8601String(),
-      updatedAt: null,
-      address: business.address != null
-          ? BusinessDataAddress(
-              id: 0,
-              street: business.address.street,
-              number: business.address.number,
-              city: business.address.city,
-              state: business.address.state,
-              zipCode: business.address.zipCode,
-              complement: null,
-            )
-          : null,
-    );
+  Future<void> _navigateToStore() async {
+    setState(() {
+      _isLoadingStore = true;
+    });
+
+    try {
+      final token = await DatabaseHelper.instance.getToken();
+      if (token == null) {
+        throw Exception("Usuário não autenticado.");
+      }
+
+      final businessData =
+      await BusinessService.getBusiness(widget.business.id, token);
+
+      if (businessData == null) {
+        throw Exception("Não foi possível carregar os dados da loja.");
+      }
+
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StoreScreen(
+              id: businessData.id.toString(),
+              storeName: businessData.appName,
+              storeLogo: businessData.logo ?? 'assets/shop.png',
+              storeDescription:
+              businessData.description ?? 'Descrição não disponível.',
+              rating: 4.8,
+              workingHours:
+              businessData.openingHours ?? 'Horário não informado',
+              business: businessData,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao carregar loja: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingStore = false;
+        });
+      }
+    }
   }
 
   @override
@@ -222,26 +249,17 @@ class _DescriptionBagScreenState extends State<DescriptionBagScreen> {
                             ),
                             const Spacer(),
                             TextButton(
-                              onPressed: () {
-                                final businessData = _convertToBusinessData(widget.business);
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => StoreScreen(
-                                      // Use os campos do `businessData` que você acabou de criar.
-                                      id: businessData.id.toString(),
-                                      storeName: businessData.appName, // Agora está correto
-                                      storeLogo: businessData.logo ?? 'assets/shop.png', // Agora está correto
-                                      storeDescription: businessData.description ?? 'Descrição não disponível.', // Agora está correto
-                                      rating: 4.8, // Este dado não vem da API, mantemos fixo
-                                      workingHours: businessData.openingHours ?? '18:00 às 23:30', // Agora está correto
-                                      business: businessData, // CORRETO! Os tipos agora são os mesmos (BusinessData).
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: const Text(
+                              onPressed: _isLoadingStore ? null : _navigateToStore,
+                              child: _isLoadingStore
+                                  ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.black,
+                                ),
+                              )
+                                  : const Text(
                                 'Ver Loja',
                                 style: TextStyle(
                                   color: Colors.black,

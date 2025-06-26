@@ -58,19 +58,19 @@ class _DeliveryOptionScreenState extends State<DeliveryOptionScreen> {
       }
 
       final client =
-          await ClientService.getClient(userData['entityId'].toString(), token);
+      await ClientService.getClient(userData['entityId'].toString(), token);
       if (client == null) {
         throw Exception('Dados do cliente não encontrados');
       }
 
       final address =
-          await AddressService.getAddress(client.idAddress.toString(), token);
+      await AddressService.getAddress(client.idAddress.toString(), token);
 
       BusinessData? business;
 
       if (_cartService.businessId != null) {
         business =
-            await BusinessService.getBusiness(_cartService.businessId!, token);
+        await BusinessService.getBusiness(_cartService.businessId!, token);
       }
 
       setState(() {
@@ -161,336 +161,338 @@ class _DeliveryOptionScreenState extends State<DeliveryOptionScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
+      // MUDANÇA 1: O body agora é só o conteúdo que precisa rolar.
+      // Removemos o Container com altura fixa e o Spacer.
       body: SingleChildScrollView(
-        child: Container(
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (businessData != null) ...[
-                  const Text(
-                    'Estabelecimento:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
+        padding: const EdgeInsets.all(16.0), // Padding movido para cá
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (businessData != null) ...[
+              const Text(
+                'Estabelecimento:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      businessData!.appName,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          businessData!.appName,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        const SizedBox(height: 4),
-                        if (businessData!.address != null) ...[
-                          Row(
-                            children: [
-                              const Icon(Icons.location_on,
-                                  size: 16, color: Colors.red),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  businessData!.address!.fullAddress,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                        if (businessData!.cellphone.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(Icons.phone,
-                                  size: 16, color: Colors.green),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Telefone: ${businessData!.cellphone}',
-                                style: const TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Suas Bags:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const SizedBox(height: 8),
-                  ..._cartService.items
-                      .map((item) => Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.green[50],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.green.shade200),
+                    const SizedBox(height: 4),
+                    if (businessData!.address != null) ...[
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on,
+                              size: 16, color: Colors.red),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              businessData!.address!.fullAddress,
+                              style: const TextStyle(fontSize: 14),
                             ),
-                            child: Row(
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (businessData!.cellphone.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.phone,
+                              size: 16, color: Colors.green),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Telefone: ${businessData!.cellphone}',
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Suas Bags:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              ..._cartService.items
+                  .map((item) => Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.shopping_bag,
+                        color: Colors.green),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.name,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold),
+                          ),
+                          if (item.description != null &&
+                              item.description!.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              item.description!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Text(
+                      'R\$ ${item.price.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+              ))
+                  .toList(),
+              const SizedBox(height: 16),
+            ],
+            const Text(
+              'Retirada no Local:',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            Container(
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: isPickupSelected ? Colors.red[50] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isPickupSelected ? Colors.red : Colors.grey,
+                  width: isPickupSelected ? 2 : 1,
+                ),
+              ),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    isPickupSelected = true;
+                  });
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Retirar no estabelecimento',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          if (businessData?.address != null) ...[
+                            const SizedBox(height: 8),
+                            Row(
                               children: [
-                                const Icon(Icons.shopping_bag,
-                                    color: Colors.green),
-                                const SizedBox(width: 12),
+                                const Icon(Icons.location_on,
+                                    size: 16, color: Colors.red),
+                                const SizedBox(width: 4),
                                 Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.name,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      if (item.description != null &&
-                                          item.description!.isNotEmpty) ...[
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          item.description!,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  'R\$ ${item.price.toStringAsFixed(2)}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green,
+                                  child: Text(
+                                    businessData!.address!.fullAddress,
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black87),
                                   ),
                                 ),
                               ],
                             ),
-                          ))
-                      .toList(),
-                  const SizedBox(height: 16),
-                ],
-                const Text(
-                  'Retirada no Local:',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      isPickupSelected
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      color: isPickupSelected ? Colors.red : Colors.grey,
+                    ),
+                  ],
                 ),
+              ),
+            ),
+            if (!hasDelivery)
+              Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.warning, color: Colors.orange),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Aviso! O estabelecimento não tem opção de entrega.',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (hasDelivery) ...[
+              const SizedBox(height: 16),
+              const Text(
+                'Entrega:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color:
+                  !isPickupSelected ? Colors.red[50] : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: !isPickupSelected ? Colors.red : Colors.grey,
+                    width: !isPickupSelected ? 2 : 1,
+                  ),
+                ),
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      isPickupSelected = false;
+                    });
+                  },
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Entrega em domicílio',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Icon(
+                            !isPickupSelected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_unchecked,
+                            color: !isPickupSelected
+                                ? Colors.red
+                                : Colors.grey,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Taxa de entrega:',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'R\$ ${deliveryTax.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (clientAddress != null)
                 Container(
                   padding: const EdgeInsets.all(12),
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: isPickupSelected ? Colors.red[50] : Colors.grey[100],
+                    color: Colors.blue[50],
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isPickupSelected ? Colors.red : Colors.grey,
-                      width: isPickupSelected ? 2 : 1,
-                    ),
                   ),
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        isPickupSelected = true;
-                      });
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Retirar no estabelecimento',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              if (businessData?.address != null) ...[
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.location_on,
-                                        size: 16, color: Colors.red),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        businessData!.address!.fullAddress,
-                                        style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black87),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        Icon(
-                          isPickupSelected
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                          color: isPickupSelected ? Colors.red : Colors.grey,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (!hasDelivery)
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.orange[50],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.warning, color: Colors.orange),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Aviso! O estabelecimento não tem opção de entrega.',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (hasDelivery) ...[
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Entrega:',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color:
-                          !isPickupSelected ? Colors.red[50] : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: !isPickupSelected ? Colors.red : Colors.grey,
-                        width: !isPickupSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          isPickupSelected = false;
-                        });
-                      },
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Entrega em domicílio',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Icon(
-                                !isPickupSelected
-                                    ? Icons.radio_button_checked
-                                    : Icons.radio_button_unchecked,
-                                color: !isPickupSelected
-                                    ? Colors.red
-                                    : Colors.grey,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Taxa de entrega:',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                'R\$ ${deliveryTax.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (clientAddress != null)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.blue[50],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Seu Endereço:',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(clientAddress!.fullAddress),
-                              ],
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Seu Endereço:',
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(clientAddress!.fullAddress),
+                          ],
+                        ),
                       ),
-                    ),
-                ],
-                const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onPressed: () {
-                      final finalDeliveryFee =
-                          isPickupSelected ? 0.0 : deliveryTax;
-                      Navigator.pushNamed(
-                        context,
-                        '/bag/reviewOrder',
-                        arguments: {
-                          'subtotal': widget.subtotal,
-                          'deliveryFee': finalDeliveryFee,
-                          'isPickup': isPickupSelected,
-                          'businessData': businessData,
-                          'clientAddress': clientAddress,
-                        },
-                      );
-                    },
-                    child: Text(
-                      isPickupSelected
-                          ? 'Confirmar Retirada - R\$ ${widget.subtotal.toStringAsFixed(2)}'
-                          : 'Confirmar Entrega - R\$ ${(widget.subtotal + deliveryTax).toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 16, color: Colors.white),
-                    ),
+                    ],
                   ),
                 ),
-              ],
+            ],
+            // MUDANÇA 2: O Spacer e o botão foram removidos daqui.
+          ],
+        ),
+      ),
+      // MUDANÇA 3: Adicionamos a propriedade `bottomNavigationBar` ao Scaffold.
+      // O botão agora vive aqui, sempre visível e fixo na parte inferior.
+      bottomNavigationBar: Container(
+        color: Colors.white, // Para combinar com o fundo do Scaffold
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32), // Padding para o botão
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () {
+              final finalDeliveryFee =
+              isPickupSelected ? 0.0 : deliveryTax;
+              Navigator.pushNamed(
+                context,
+                '/bag/reviewOrder',
+                arguments: {
+                  'subtotal': widget.subtotal,
+                  'deliveryFee': finalDeliveryFee,
+                  'isPickup': isPickupSelected,
+                  'businessData': businessData,
+                  'clientAddress': clientAddress,
+                },
+              );
+            },
+            child: Text(
+              isPickupSelected
+                  ? 'Confirmar Retirada - R\$ ${widget.subtotal.toStringAsFixed(2)}'
+                  : 'Confirmar Entrega - R\$ ${(widget.subtotal + deliveryTax).toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 16, color: Colors.white),
             ),
           ),
         ),

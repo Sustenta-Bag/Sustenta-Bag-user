@@ -49,7 +49,7 @@ class _StoreScreenState extends State<StoreScreen> {
       _userId = await DatabaseHelper.instance.getUserId();
       if (_token != null && _userId != null) {
         final result =
-            await FavoriteService.isFavorite(widget.business.id, _token!);
+        await FavoriteService.isFavorite(widget.business.id, _token!);
         if (mounted) {
           setState(() {
             isFavorite = result;
@@ -89,10 +89,10 @@ class _StoreScreenState extends State<StoreScreen> {
       bool success;
       if (isFavorite) {
         success =
-            await FavoriteService.removeFavorite(widget.business.id, _token!);
+        await FavoriteService.removeFavorite(widget.business.id, _token!);
       } else {
         success =
-            await FavoriteService.addFavorite(widget.business.id, _token!);
+        await FavoriteService.addFavorite(widget.business.id, _token!);
       }
 
       if (success && mounted) {
@@ -126,6 +126,7 @@ class _StoreScreenState extends State<StoreScreen> {
   }
 
   void _showErrorSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -133,6 +134,85 @@ class _StoreScreenState extends State<StoreScreen> {
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
       ),
+    );
+  }
+
+  Future<void> _showWhatsAppDialog() async {
+    final String phone = widget.business.cellphone;
+
+    if (phone.isEmpty) {
+      _showErrorSnackBar('Número de WhatsApp não disponível.');
+      return;
+    }
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Contato WhatsApp'),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const Icon(FontAwesomeIcons.whatsapp,
+                  color: Colors.green, size: 28),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(phone,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Fechar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showLocationDialog() async {
+    final String? address = widget.business.address?.fullAddress;
+
+    if (address == null || address.isEmpty) {
+      _showErrorSnackBar('Endereço não disponível.');
+      return;
+    }
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Endereço'),
+          content: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.location_on, color: Colors.blue, size: 28),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(address, style: const TextStyle(fontSize: 16)),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Fechar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -145,7 +225,7 @@ class _StoreScreenState extends State<StoreScreen> {
           children: [
             Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
+              const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -157,7 +237,7 @@ class _StoreScreenState extends State<StoreScreen> {
                 ],
               ),
             ),
-            Container(
+            SizedBox(
               height: 280,
               child: Stack(
                 alignment: Alignment.center,
@@ -190,27 +270,27 @@ class _StoreScreenState extends State<StoreScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20.0),
                       child: (widget.business.logo != null &&
-                              widget.business.logo!.isNotEmpty)
+                          widget.business.logo!.isNotEmpty)
                           ? Image.network(
-                              '${ApiConfig.monolitoStaticUrl}${widget.business.logo}',
-                              width: 205,
-                              height: 205,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  'assets/shop.png',
-                                  width: 205,
-                                  height: 205,
-                                  fit: BoxFit.cover,
-                                );
-                              },
-                            )
+                        '${ApiConfig.monolitoStaticUrl}${widget.business.logo}',
+                        width: 205,
+                        height: 205,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/shop.png',
+                            width: 205,
+                            height: 205,
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      )
                           : Image.asset(
-                              'assets/shop.png',
-                              width: 205,
-                              height: 205,
-                              fit: BoxFit.cover,
-                            ),
+                        'assets/shop.png',
+                        width: 205,
+                        height: 205,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 ],
@@ -223,163 +303,142 @@ class _StoreScreenState extends State<StoreScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                 ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Container(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Padding(
                         padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 242, 241, 241),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color.fromARGB(255, 117, 116, 116)
-                                  .withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            // WhatsApp
-                            _buildActionButton(
-                              icon: FontAwesomeIcons.whatsapp,
-                              color: Colors.green,
-                              onTap: () {
-                                print('WhatsApp: ${widget.business.cellphone}');
-                              },
-                            ),
-                            const SizedBox(width: 8),
+                        child: Container(
+                          padding: const EdgeInsets.all(16.0),
+                          decoration: BoxDecoration(
+                            color: const Color.fromARGB(255, 242, 241, 241),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color.fromARGB(255, 117, 116, 116)
+                                    .withOpacity(0.2),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              // WhatsApp
+                              _buildActionButton(
+                                icon: FontAwesomeIcons.whatsapp,
+                                color: Colors.green,
+                                onTap: _showWhatsAppDialog,
+                              ),
+                              const SizedBox(width: 8),
 
-                            _buildActionButton(
-                              icon: Icons.location_on,
-                              color: Colors.blue,
-                              onTap: () {
-                                print(
-                                    'Endereço: ${widget.business.address?.fullAddress ?? 'Endereço não disponível'}');
-                              },
-                            ),
-                            const SizedBox(width: 8),
+                              // Localização
+                              _buildActionButton(
+                                icon: Icons.location_on,
+                                color: Colors.blue,
+                                onTap: _showLocationDialog,
+                              ),
+                              const SizedBox(width: 8),
 
-                            // Rating
-                            InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ShowReviewScreen(
-                                      storeId: widget.business.id.toString(),
-                                      storeName: widget.business.appName,
+                              // Avaliações
+                              InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ShowReviewScreen(
+                                        storeId: widget.business.id.toString(),
+                                        storeName: widget.business.appName,
+                                      ),
                                     ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                        color: Colors.grey.shade300),
                                   ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border:
-                                      Border.all(color: Colors.grey.shade300),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.star,
-                                        color: Colors.amber, size: 16),
-                                    const SizedBox(width: 2),
-                                    Text(
-                                      widget.rating.toString(),
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
+                                  child: const Row(
+                                    children: [
+                                      Icon(Icons.star,
+                                          color: Colors.amber, size: 16),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Avaliações',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
 
-                            const Spacer(),
+                              const Spacer(),
 
-                            TextButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => BusinessBagsScreen(
-                                      business: widget.business,
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => BusinessBagsScreen(
+                                        business: widget.business,
+                                      ),
                                     ),
+                                  );
+                                },
+                                child: const Text(
+                                  'Ver Bags',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                );
-                              },
-                              child: const Text(
-                                'Ver Bags',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Descrição da loja (agora com o texto da API)
-                          Text(
-                            widget.storeDescription, // Já foi corrigido na chamada
-                            style: const TextStyle(
-                              color: Colors.black54,
-                              fontSize: 14,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.storeDescription,
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontSize: 14,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Chip de Status (Aberto/Fechado)
-                          Chip(
-                            avatar: Icon(
-                              widget.business.status ? Icons.check_circle : Icons.cancel,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                            label: Text(
-                              widget.business.status ? 'Aberto Agora' : 'Fechado',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
-                            backgroundColor: widget.business.status ? Colors.green : Colors.red,
-                          ),
-                          const Divider(height: 30),
-
-                          // Horário de Funcionamento
-                          _buildInfoRow(
-                            icon: Icons.access_time_filled,
-                            text: "Horário: ${widget.workingHours}",
-                          ),
-                          const SizedBox(height: 10),
-
-                          // Informações de Entrega (só aparecem se a loja fizer entrega)
-                          if (widget.business.delivery) ...[
+                            const SizedBox(height: 20),
+                            const Divider(height: 30),
                             _buildInfoRow(
-                              icon: Icons.delivery_dining,
-                              text:
-                              "Entrega em aprox. ${widget.business.deliveryTime ?? '?'} min",
+                              icon: Icons.access_time_filled,
+                              text: "Horário: ${widget.workingHours}",
                             ),
                             const SizedBox(height: 10),
-                            _buildInfoRow(
-                              icon: Icons.payments,
-                              text:
-                              "Taxa de entrega: R\$ ${widget.business.deliveryTax?.toStringAsFixed(2) ?? 'N/A'}",
-                            ),
+                            if (widget.business.delivery) ...[
+                              _buildInfoRow(
+                                icon: Icons.delivery_dining,
+                                text:
+                                "Entrega em aprox. ${widget.business.deliveryTime ?? '?'} min",
+                              ),
+                              const SizedBox(height: 10),
+                              _buildInfoRow(
+                                icon: Icons.payments,
+                                text:
+                                "Taxa de entrega: R\$ ${widget.business.deliveryTax?.toStringAsFixed(2) ?? 'N/A'}",
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
