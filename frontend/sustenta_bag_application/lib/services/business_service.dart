@@ -83,6 +83,7 @@ class BusinessService {
             deliveryTax: business.deliveryTax,
             idAddress: business.idAddress,
             deliveryTime: business.deliveryTime,
+            openingHours: business.openingHours,
             logo: business.logo,
             status: business.status,
             createdAt: business.createdAt,
